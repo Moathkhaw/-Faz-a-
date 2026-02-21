@@ -4,56 +4,62 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تطبيق فزعة - للتوصيل السريع</title>
-    <!-- Tailwind CSS للتصميم -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome للأيقونات -->
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* إعدادات الخطوط والأنيميشن الأساسية */
         @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap');
         body { font-family: 'Tajawal', sans-serif; background-color: #f3f4f6; }
-        
-        /* إخفاء شريط التمرير لجمالية التطبيق */
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* تأثيرات النبض والتحميل */
         @keyframes pulse-red { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239,68,68,0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(239,68,68,0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239,68,68,0); } }
         .blinking-alert { animation: pulse-red 2s infinite; }
+        
+        .toggle-checkbox:checked { right: 0; border-color: #10B981; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #10B981; }
         .loader { border: 3px solid #f3f3f3; border-top: 3px solid #f97316; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block;}
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        /* أزرار التبديل والمحادثة */
-        .toggle-checkbox:checked { right: 0; border-color: #10B981; }
-        .toggle-checkbox:checked + .toggle-label { background-color: #10B981; }
         .chat-me { background-color: #e0e7ff; color: #1e40af; border-radius: 1rem 1rem 0 1rem; align-self: flex-end; }
         .chat-other { background-color: #f3f4f6; color: #374151; border-radius: 1rem 1rem 1rem 0; align-self: flex-start; }
         
-        /* تخصيص الشريط السفلي والتقييم */
         .nav-active { color: #4f46e5 !important; font-weight: 900; }
         .nav-active i { transform: translateY(-3px) scale(1.1); transition: all 0.2s; color: #4f46e5; }
         .star-rating i { cursor: pointer; color: #d1d5db; transition: color 0.2s; }
         .star-rating i.active { color: #fbbf24; }
         
-        /* زر رفع الصورة */
         .file-upload-btn { position: relative; overflow: hidden; display: inline-block; }
         .file-upload-btn input[type=file] { font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; }
+        
+        /* Flash Sale Animation */
+        @keyframes flashText { 0% { color: #ef4444; } 50% { color: #f97316; } 100% { color: #ef4444; } }
+        .flash-text { animation: flashText 1.5s infinite; }
     </style>
 </head>
 <body class="text-gray-800 antialiased flex justify-center h-screen overflow-hidden">
 
-    <!-- حاوية التطبيق الرئيسية (محاكاة الموبايل) -->
+    <!-- شاشة التحميل الابتدائية لمنع الأخطاء -->
+    <div id="initial-loader" class="fixed inset-0 bg-indigo-900 z-[9999] flex flex-col items-center justify-center transition-opacity duration-500">
+        <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center text-4xl mb-4 shadow-2xl relative">
+            <i class="fa-solid fa-rocket text-orange-500 animate-bounce mt-2"></i>
+            <div class="absolute inset-0 border-4 border-indigo-200 border-t-orange-500 rounded-full animate-spin"></div>
+        </div>
+        <h1 class="text-2xl font-black text-white mb-2 tracking-wide">فزعــة</h1>
+        <p class="text-indigo-200 text-sm font-medium">جاري تهيئة النظام...</p>
+    </div>
+
     <div class="w-full max-w-md h-full bg-gray-50 flex flex-col relative shadow-2xl overflow-hidden border-x border-gray-200">
         
-        <!-- التنبيهات (Toast Notifications) -->
-        <div id="toast" class="absolute top-4 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-5 py-3 rounded-2xl shadow-2xl transition-all duration-300 opacity-0 z-[100] pointer-events-none flex items-center gap-3 text-sm font-bold min-w-[250px]">
-            <span id="toast-icon" class="text-xl"></span>
-            <span id="toast-msg"></span>
+        <!-- Toast -->
+        <div id="toast" class="absolute top-4 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-5 py-3 rounded-2xl shadow-2xl transition-all duration-300 opacity-0 z-[100] pointer-events-none flex flex-col items-center gap-2 text-sm font-bold min-w-[250px] text-center">
+            <div class="flex items-center gap-3"><span id="toast-icon" class="text-xl"></span><span id="toast-msg"></span></div>
+            <img id="toast-img" class="w-full h-24 object-cover rounded-lg hidden mt-1" src="" alt="Notification Image">
         </div>
 
-        <!-- ==================== شاشة تسجيل الدخول ==================== -->
+        <!-- ==================== Login ==================== -->
         <div id="view-login" class="flex flex-col h-full bg-white relative overflow-y-auto hide-scrollbar">
-            <!-- خلفية علوية -->
             <div class="absolute top-0 w-full h-1/2 bg-gradient-to-br from-indigo-900 to-blue-800 rounded-b-[4rem] shadow-inner"></div>
             
             <div class="flex-1 flex flex-col items-center pt-16 px-8 relative z-10">
@@ -63,54 +69,37 @@
                 <h1 id="app-name-display-1" class="text-3xl font-black text-white mb-1 tracking-wide">فزعــة</h1>
                 <p class="text-indigo-200 mb-10 text-center text-sm font-medium">الأسرع في المفرق وبلعما</p>
                 
-                <!-- صندوق تسجيل الدخول -->
                 <div class="w-full bg-white rounded-3xl shadow-xl p-6 border border-gray-100">
                     <div class="flex w-full bg-gray-100 rounded-xl p-1 mb-6">
-                        <button id="tab-customer" onclick="switchLoginTab('customer')" class="flex-1 py-2 text-sm font-bold bg-white shadow rounded-lg text-indigo-700 transition-all">الزبائن</button>
-                        <button id="tab-staff" onclick="switchLoginTab('staff')" class="flex-1 py-2 text-sm font-bold text-gray-500 rounded-lg transition-all">فريق العمل</button>
+                        <button id="tab-customer" onclick="window.switchLoginTab('customer')" class="flex-1 py-2 text-sm font-bold bg-white shadow rounded-lg text-indigo-700 transition-all">الزبائن</button>
+                        <button id="tab-staff" onclick="window.switchLoginTab('staff')" class="flex-1 py-2 text-sm font-bold text-gray-500 rounded-lg transition-all">فريق العمل</button>
                     </div>
 
-                    <!-- نموذج الزبون -->
                     <div id="form-customer" class="w-full space-y-4">
-                        <div>
-                            <label class="block text-xs font-bold text-gray-600 mb-1">رقم الهاتف</label>
-                            <div class="relative"><i class="fa-solid fa-phone absolute right-4 top-3.5 text-gray-400"></i><input type="tel" id="login-phone" class="w-full pr-10 pl-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 outline-none" placeholder="07XXXXXXXX"></div>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-600 mb-1">كلمة المرور</label>
-                            <div class="relative"><i class="fa-solid fa-lock absolute right-4 top-3.5 text-gray-400"></i><input type="password" id="login-password" class="w-full pr-10 pl-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 outline-none" placeholder="••••••••"></div>
-                        </div>
-                        <button onclick="loginCustomer()" class="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 text-white font-bold py-3.5 rounded-xl shadow-lg mt-2 flex justify-center"><span id="login-btn-text">دخول</span></button>
-                        <p class="text-center text-sm mt-4 text-gray-500 font-medium">جديد معنا؟ <button onclick="showView('signup')" class="text-indigo-600 font-bold hover:underline">إنشاء حساب</button></p>
+                        <div class="relative"><i class="fa-solid fa-phone absolute right-4 top-3.5 text-gray-400"></i><input type="tel" id="login-phone" class="w-full pr-10 pl-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 outline-none" placeholder="رقم الهاتف"></div>
+                        <div class="relative"><i class="fa-solid fa-lock absolute right-4 top-3.5 text-gray-400"></i><input type="password" id="login-password" class="w-full pr-10 pl-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 outline-none" placeholder="كلمة المرور"></div>
+                        <button onclick="window.loginCustomer()" class="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 text-white font-bold py-3.5 rounded-xl shadow-lg mt-2 flex justify-center"><span id="login-btn-text">دخول</span></button>
+                        <p class="text-center text-sm mt-4 text-gray-500 font-medium">جديد معنا؟ <button onclick="window.showView('signup')" class="text-indigo-600 font-bold hover:underline">إنشاء حساب</button></p>
                     </div>
 
-                    <!-- نموذج الفريق (إدارة، كابتن، مطعم) -->
                     <div id="form-staff" class="w-full space-y-4 hidden">
-                        <div>
-                            <label class="block text-xs font-bold text-gray-600 mb-1">نوع الحساب</label>
-                            <select id="login-staff-role" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 outline-none text-sm">
-                                <option value="admin">إدارة التطبيق 🛡️</option>
-                                <option value="merchant">متجر / مطعم 🏪</option>
-                                <option value="captain">كابتن توصيل 🛵</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-600 mb-1">رقم العمل أو المعرف (ID)</label>
-                            <input type="text" id="login-staff-worknum" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 outline-none text-sm" placeholder="مثال: QE-1234">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-600 mb-1">كلمة المرور</label>
-                            <input type="password" id="login-staff-password" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 outline-none text-sm" placeholder="••••••••">
-                        </div>
-                        <button onclick="loginStaff()" class="w-full bg-gray-900 hover:bg-black text-white font-bold py-3.5 rounded-xl shadow-lg mt-2 flex justify-center"><span id="login-staff-btn-text">دخول للنظام</span></button>
+                        <select id="login-staff-role" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 outline-none text-sm">
+                            <option value="admin">إدارة التطبيق 🛡️</option>
+                            <option value="merchant">متجر / مطعم 🏪</option>
+                            <option value="captain">كابتن توصيل 🛵</option>
+                            <option value="support">دعم فني 🎧</option>
+                        </select>
+                        <input type="text" id="login-staff-worknum" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 outline-none text-sm" placeholder="المعرف (ID)">
+                        <input type="password" id="login-staff-password" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 outline-none text-sm" placeholder="كلمة المرور">
+                        <button onclick="window.loginStaff()" class="w-full bg-gray-900 hover:bg-black text-white font-bold py-3.5 rounded-xl shadow-lg mt-2 flex justify-center"><span id="login-staff-btn-text">دخول للنظام</span></button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- ==================== شاشة إنشاء حساب الزبون ==================== -->
+        <!-- ==================== Signup ==================== -->
         <div id="view-signup" class="hidden flex-col h-full bg-white relative overflow-y-auto hide-scrollbar">
-            <div class="p-6 pb-2 flex items-center"><button onclick="showView('login')" class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors"><i class="fa-solid fa-arrow-right"></i></button></div>
+            <div class="p-6 pb-2 flex items-center"><button onclick="window.showView('login')" class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors"><i class="fa-solid fa-arrow-right"></i></button></div>
             <div class="px-8 pb-8 flex-1">
                 <h2 class="text-3xl font-black text-indigo-900 mb-1">مرحباً بك!</h2>
                 <p class="text-gray-500 mb-8 text-sm font-medium">سجل بياناتك للبدء بالطلب وكسب النقاط</p>
@@ -119,13 +108,13 @@
                     <input type="tel" id="reg-phone" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 outline-none text-sm" placeholder="رقم الهاتف (07XXXXXXXX)">
                     <div class="flex gap-2">
                         <input type="text" id="reg-location" class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 outline-none text-xs text-gray-500" placeholder="الموقع (GPS)..." readonly>
-                        <button onclick="getLocation()" class="bg-indigo-600 text-white px-5 rounded-xl shadow-md hover:bg-indigo-700 transition-colors"><i class="fa-solid fa-location-crosshairs"></i></button>
+                        <button onclick="window.getLocation()" class="bg-indigo-600 text-white px-5 rounded-xl shadow-md hover:bg-indigo-700 transition-colors"><i class="fa-solid fa-location-crosshairs"></i></button>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <input type="password" id="reg-password" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 outline-none text-sm" placeholder="كلمة المرور">
                         <input type="password" id="reg-confirm" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 outline-none text-sm" placeholder="تأكيد الكلمة">
                     </div>
-                    <button onclick="registerCustomer()" class="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold py-3.5 rounded-xl shadow-lg mt-6 flex justify-center"><span id="reg-btn-text">إنشاء الحساب</span></button>
+                    <button onclick="window.registerCustomer()" class="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold py-3.5 rounded-xl shadow-lg mt-6 flex justify-center"><span id="reg-btn-text">إنشاء الحساب</span></button>
                 </div>
             </div>
         </div>
@@ -139,7 +128,7 @@
                         <p class="text-xs text-indigo-300 mb-1">مرحباً بك في <span id="app-name-display-2">فزعــة</span>،</p>
                         <h2 id="cust-name-display" class="text-xl font-black tracking-wide">الزبون</h2>
                     </div>
-                    <button onclick="openNotificationsModal()" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center relative hover:bg-white/20 transition-colors">
+                    <button onclick="window.openNotificationsModal()" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center relative hover:bg-white/20 transition-colors">
                         <i class="fa-solid fa-bell text-sm"></i>
                         <span id="cust-notif-badge" class="hidden absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
                     </button>
@@ -151,34 +140,84 @@
             </div>
             
             <div class="flex-1 overflow-y-auto p-5 hide-scrollbar">
+                
                 <div id="cust-tab-home" class="space-y-6 block">
-                    <div onclick="openCustomOrderModal()" class="bg-gradient-to-r from-orange-500 to-amber-500 rounded-2xl p-4 text-white shadow-lg relative overflow-hidden cursor-pointer hover:shadow-xl transition-shadow">
+                    <!-- المساعد الذكي -->
+                    <div class="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl p-4 text-white shadow-lg relative overflow-hidden mb-2">
+                        <div class="absolute -left-4 -top-4 text-white/10 text-6xl"><i class="fa-solid fa-brain"></i></div>
+                        <h3 class="font-black text-lg mb-2 relative z-10">✨ محتار شو تطلب؟</h3>
+                        <p class="text-xs text-purple-100 mb-3 relative z-10">اسأل المساعد الذكي (Gemini) ليقترح لك وجبة!</p>
+                        <div class="flex gap-2 relative z-10">
+                            <input type="text" id="ai-food-query" class="flex-1 px-3 py-2 rounded-xl text-gray-800 text-sm outline-none" placeholder="مثال: عبالي إشي دسم ورخيص...">
+                            <button onclick="window.askAIFood()" id="ai-food-btn" class="bg-white text-purple-600 px-4 py-2 rounded-xl text-sm font-bold shadow hover:bg-gray-50 transition-colors">اسأل</button>
+                        </div>
+                        <div id="ai-food-result" class="mt-3 text-sm font-bold bg-white/20 p-3 rounded-xl hidden relative z-10 leading-relaxed"></div>
+                    </div>
+
+                    <!-- البحث والفلترة -->
+                    <div class="flex gap-2 mb-2">
+                        <div class="relative flex-1">
+                            <i class="fa-solid fa-magnifying-glass absolute right-3 top-3 text-gray-400"></i>
+                            <input type="text" id="cust-search" onkeyup="window.renderCustomer()" class="w-full pr-9 pl-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-indigo-500 shadow-sm" placeholder="ابحث عن متجر، وجبة...">
+                        </div>
+                        <select id="cust-sort" onchange="window.renderCustomer()" class="w-1/3 px-2 py-2.5 rounded-xl border border-gray-200 text-[10px] outline-none bg-white shadow-sm font-bold text-gray-600">
+                            <option value="none">الترتيب</option>
+                            <option value="asc">الأقل سعراً</option>
+                            <option value="desc">الأعلى سعراً</option>
+                        </select>
+                    </div>
+
+                    <div onclick="window.openCustomOrderModal()" class="bg-gradient-to-r from-orange-500 to-amber-500 rounded-2xl p-4 text-white shadow-lg relative overflow-hidden cursor-pointer hover:shadow-xl transition-shadow mb-4">
                         <div class="absolute -right-4 -bottom-4 text-white/20 text-6xl"><i class="fa-solid fa-motorcycle"></i></div>
                         <h3 class="font-black text-lg mb-1 relative z-10">توصيل من أي مكان!</h3>
-                        <p class="text-xs font-medium text-orange-100 relative z-10">أدخل اسم المتجر والطلب، وكابتن فزعة بيجيبلك إياه.</p>
-                        <button class="mt-3 bg-white text-orange-600 px-4 py-1.5 rounded-lg text-xs font-bold shadow relative z-10">اطلب الآن <i class="fa-solid fa-arrow-left ml-1"></i></button>
+                        <p class="text-[11px] font-medium text-orange-100 relative z-10">أدخل اسم المتجر، وكابتن فزعة بيجيبلك إياه للباب.</p>
                     </div>
 
-                    <div id="customer-promos-section" class="hidden">
-                        <div class="flex items-center gap-2 mb-3"><i class="fa-solid fa-ticket text-orange-500"></i><h3 class="font-bold text-gray-800 text-sm">كوبونات خصم فعالة</h3></div>
-                        <div id="customer-promos-list" class="flex gap-3 overflow-x-auto hide-scrollbar pb-2"></div>
+                    <!-- الأكثر مبيعاً (Best Sellers) -->
+                    <div id="best-sellers-container" class="mb-6">
+                        <h3 class="font-black text-gray-800 text-sm mb-3"><i class="fa-solid fa-fire text-orange-500"></i> الأكثر مبيعاً اليوم 🔥</h3>
+                        <div class="flex gap-3 overflow-x-auto hide-scrollbar pb-2" id="best-sellers-list"></div>
                     </div>
 
-                    <div>
-                        <div class="flex justify-between items-center mb-3"><h3 class="font-bold text-gray-800 text-lg">ماذا تود أن تطلب؟</h3></div>
+                    <div id="cust-stores-view" class="block">
+                        <div class="flex justify-between items-center mb-3"><h3 class="font-bold text-gray-800 text-lg">الأقسام والمتاجر</h3></div>
                         <div class="flex gap-2 overflow-x-auto hide-scrollbar mb-4 pb-1">
-                            <button onclick="setCustCategory('all')" id="btn-cat-all" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 text-white shadow-md whitespace-nowrap transition-colors">الكل</button>
-                            <button onclick="setCustCategory('restaurant')" id="btn-cat-restaurant" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-600 border border-gray-200 shadow-sm whitespace-nowrap transition-colors"><i class="fa-solid fa-burger mr-1 text-orange-400"></i> مطاعم</button>
-                            <button onclick="setCustCategory('market')" id="btn-cat-market" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-600 border border-gray-200 shadow-sm whitespace-nowrap transition-colors"><i class="fa-solid fa-basket-shopping mr-1 text-blue-400"></i> ماركت</button>
-                            <button onclick="setCustCategory('pharmacy')" id="btn-cat-pharmacy" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-600 border border-gray-200 shadow-sm whitespace-nowrap transition-colors"><i class="fa-solid fa-pills mr-1 text-green-400"></i> صيدليات</button>
+                            <button onclick="window.setCustCategory('all')" id="btn-cat-all" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 text-white shadow-md whitespace-nowrap transition-colors">الكل</button>
+                            <button onclick="window.setCustCategory('restaurant')" id="btn-cat-restaurant" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-600 border shadow-sm whitespace-nowrap transition-colors">🍔 مطاعم</button>
+                            <button onclick="window.setCustCategory('market')" id="btn-cat-market" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-600 border shadow-sm whitespace-nowrap transition-colors">🛒 ماركت ومقاضي</button>
+                            <button onclick="window.setCustCategory('pharmacy')" id="btn-cat-pharmacy" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-600 border shadow-sm whitespace-nowrap transition-colors">💊 صيدليات</button>
+                            <button onclick="window.setCustCategory('school')" id="btn-cat-school" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-600 border shadow-sm whitespace-nowrap transition-colors">🎓 مدارس/جامعات</button>
+                            <button onclick="window.setCustCategory('productive')" id="btn-cat-productive" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-600 border shadow-sm whitespace-nowrap transition-colors">🏡 أسر منتجة</button>
+                            <button onclick="window.setCustCategory('gas')" id="btn-cat-gas" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-600 border shadow-sm whitespace-nowrap transition-colors">🔥 فزعة غاز</button>
                         </div>
-                        <div id="customer-menu-list" class="grid grid-cols-2 gap-4"></div>
+                        
+                        <!-- عروض الفلاش -->
+                        <div id="flash-sales-container" class="mb-6 hidden">
+                            <h3 class="font-black text-red-500 text-sm mb-3 flash-text"><i class="fa-solid fa-bolt"></i> عروض الفلاش (تخفيضات سريعة)</h3>
+                            <div class="flex gap-3 overflow-x-auto hide-scrollbar pb-2" id="flash-sales-list"></div>
+                        </div>
+
+                        <!-- قائمة المتاجر -->
+                        <div id="customer-stores-list" class="grid grid-cols-2 gap-4"></div>
+                    </div>
+                    
+                    <div id="cust-menu-view" class="hidden">
+                        <button onclick="window.closeStoreMenu()" class="mb-4 bg-white text-gray-600 border border-gray-200 px-4 py-2 rounded-xl text-xs font-bold shadow-sm hover:bg-gray-50"><i class="fa-solid fa-arrow-right ml-1"></i> العودة للمتاجر</button>
+                        <h3 class="font-black text-xl text-gray-800 mb-4" id="store-menu-title">قائمة المتجر</h3>
+                        <div id="customer-menu-items-list" class="space-y-6"></div>
                     </div>
                 </div>
 
-                <div id="cust-tab-cart" class="hidden space-y-4">
-                    <h3 class="font-bold text-gray-800 mb-3 text-lg border-b border-gray-200 pb-2 flex items-center gap-2"><i class="fa-solid fa-bag-shopping text-indigo-500"></i> السلة وتتبع الطلبات</h3>
-                    <div id="customer-orders-list" class="space-y-4"></div>
+                <div id="cust-tab-cart" class="hidden space-y-6">
+                    <div>
+                        <h3 class="font-bold text-gray-800 mb-3 text-lg border-b border-gray-200 pb-2 flex items-center gap-2"><i class="fa-solid fa-cart-shopping text-indigo-500"></i> سلة المشتريات</h3>
+                        <div id="real-cart-list" class="space-y-3 mb-4"></div>
+                        <button id="btn-go-checkout" onclick="window.openCheckout()" class="w-full bg-indigo-600 text-white font-black py-3 rounded-xl shadow-lg hidden">متابعة الدفع <i class="fa-solid fa-arrow-left mr-1"></i></button>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 mb-3 text-lg border-b border-gray-200 pb-2 flex items-center gap-2 mt-6"><i class="fa-solid fa-clock-rotate-left text-indigo-500"></i> طلباتي وتتبع الكابتن</h3>
+                        <div id="customer-orders-list" class="space-y-4"></div>
+                    </div>
                 </div>
 
                 <div id="cust-tab-profile" class="hidden space-y-4">
@@ -200,19 +239,29 @@
                         </div>
                         
                         <div id="convert-points-section" class="hidden relative z-10">
-                            <button onclick="requestPointsConversion()" class="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900 font-bold py-2.5 rounded-xl shadow-sm text-xs hover:from-yellow-500 hover:to-yellow-600 transition-colors">
+                            <button onclick="window.requestPointsConversion()" class="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900 font-bold py-2.5 rounded-xl shadow-sm text-xs hover:from-yellow-500 hover:to-yellow-600 transition-colors">
                                 <i class="fa-solid fa-money-bill-transfer"></i> تحويل 1000 نقطة إلى 1 دينار
                             </button>
                         </div>
-                        <button onclick="logout()" class="w-full bg-red-50 text-red-600 font-bold py-3 rounded-xl mt-2 hover:bg-red-100 transition-colors relative z-10">تسجيل الخروج</button>
                     </div>
+
+                    <!-- سجل الطلبات السابقة في الملف الشخصي -->
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 relative z-10 mt-3">
+                        <h4 class="font-bold text-gray-800 text-sm mb-3 border-b pb-2"><i class="fa-solid fa-clock-rotate-left text-indigo-500 ml-1"></i> سجل طلباتي السابقة</h4>
+                        <div id="profile-order-history" class="space-y-2 max-h-48 overflow-y-auto hide-scrollbar">
+                            <!-- سيتم ملؤه بالـ JS -->
+                        </div>
+                    </div>
+
+                    <button onclick="window.logout()" class="w-full bg-red-50 text-red-600 font-bold py-3 rounded-xl mt-2 hover:bg-red-100 transition-colors relative z-10">تسجيل الخروج</button>
                 </div>
             </div>
 
+            <!-- Bottom Nav -->
             <div class="absolute bottom-0 w-full bg-white border-t border-gray-200 flex justify-around items-center pt-3 pb-4 px-2 z-50 rounded-t-2xl shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
-                <button onclick="switchCustTab('home')" id="nav-btn-home" class="flex flex-col items-center gap-1 text-gray-400 nav-active w-1/3"><i class="fa-solid fa-house text-xl mb-0.5"></i><span class="text-[10px] font-bold">الرئيسية</span></button>
-                <button onclick="switchCustTab('cart')" id="nav-btn-cart" class="flex flex-col items-center gap-1 text-gray-400 w-1/3 relative"><i class="fa-solid fa-bag-shopping text-xl mb-0.5"></i><span class="text-[10px] font-bold">السلة</span><span id="cart-badge" class="hidden absolute top-0 right-6 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span></button>
-                <button onclick="switchCustTab('profile')" id="nav-btn-profile" class="flex flex-col items-center gap-1 text-gray-400 w-1/3"><i class="fa-solid fa-user text-xl mb-0.5"></i><span class="text-[10px] font-bold">حسابي</span></button>
+                <button onclick="window.switchCustTab('home')" id="nav-btn-home" class="flex flex-col items-center gap-1 text-gray-400 nav-active w-1/3"><i class="fa-solid fa-house text-xl mb-0.5"></i><span class="text-[10px] font-bold">الرئيسية</span></button>
+                <button onclick="window.switchCustTab('cart')" id="nav-btn-cart" class="flex flex-col items-center gap-1 text-gray-400 w-1/3 relative"><i class="fa-solid fa-bag-shopping text-xl mb-0.5"></i><span class="text-[10px] font-bold">الطلبات</span><span id="cart-badge" class="hidden absolute top-0 right-6 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span></button>
+                <button onclick="window.switchCustTab('profile')" id="nav-btn-profile" class="flex flex-col items-center gap-1 text-gray-400 w-1/3"><i class="fa-solid fa-user text-xl mb-0.5"></i><span class="text-[10px] font-bold">حسابي</span></button>
             </div>
         </div>
 
@@ -222,16 +271,27 @@
                 <div class="flex justify-between items-center mb-4">
                     <div><p class="text-xs text-pink-200 mb-1">بوابة الشركاء</p><h2 class="text-2xl font-black"><i class="fa-solid fa-store ml-1 text-pink-300"></i> <span id="merchant-name-display">المتجر</span></h2></div>
                     <div class="flex gap-2">
-                        <button onclick="openNotificationsModal()" class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center relative"><i class="fa-solid fa-bell"></i><span id="merch-notif-badge" class="hidden absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span></button>
-                        <button onclick="logout()" class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-red-500"><i class="fa-solid fa-power-off"></i></button>
+                        <button onclick="window.openNotificationsModal()" class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center relative"><i class="fa-solid fa-bell"></i><span id="merch-notif-badge" class="hidden absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span></button>
+                        <button onclick="window.logout()" class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-red-500"><i class="fa-solid fa-power-off"></i></button>
                     </div>
+                </div>
+                <div class="bg-white/10 rounded-xl p-3 flex justify-between items-center border border-white/20">
+                    <span class="font-bold text-sm">حالة المتجر (مفتوح/مغلق)</span>
+                    <label class="flex items-center cursor-pointer">
+                        <div class="relative">
+                            <input type="checkbox" id="merchant-status-toggle" class="sr-only" onchange="window.toggleMerchantStatus(this)" checked>
+                            <div class="block bg-gray-400 w-12 h-7 rounded-full transition-colors toggle-bg"></div>
+                            <div class="dot absolute left-1 top-1 bg-white w-5 h-5 rounded-full transition-transform transform"></div>
+                        </div>
+                    </label>
                 </div>
             </div>
             
             <div class="p-4 flex-1 overflow-y-auto hide-scrollbar flex flex-col">
                 <div class="flex w-full bg-gray-200/70 rounded-xl p-1 mb-5">
-                    <button id="tab-merchant-orders" onclick="switchMerchantTab('orders')" class="flex-1 py-2 text-sm font-bold bg-white shadow rounded-lg text-pink-600 transition-all">الطلبات الحية</button>
-                    <button id="tab-merchant-menu" onclick="switchMerchantTab('menu')" class="flex-1 py-2 text-sm font-bold text-gray-500 rounded-lg transition-all">إدارة المنيو</button>
+                    <button id="tab-merchant-orders" onclick="window.switchMerchantTab('orders')" class="flex-1 py-2 text-sm font-bold bg-white shadow rounded-lg text-pink-600 transition-all">الطلبات الحية</button>
+                    <button id="tab-merchant-menu" onclick="window.switchMerchantTab('menu')" class="flex-1 py-2 text-sm font-bold text-gray-500 rounded-lg transition-all">المنيو والإضافات</button>
+                    <button id="tab-merchant-dash" onclick="window.switchMerchantTab('dash')" class="flex-1 py-2 text-sm font-bold text-gray-500 rounded-lg transition-all">التقارير</button>
                 </div>
 
                 <div id="merchant-orders-content" class="block space-y-4"><div id="merchant-orders-list" class="space-y-4"></div></div>
@@ -242,16 +302,38 @@
                         <div class="space-y-3">
                             <div class="flex gap-2">
                                 <div class="file-upload-btn w-12 h-12 bg-gray-100 text-gray-500 rounded-xl flex items-center justify-center border border-dashed border-gray-300 hover:bg-gray-200 shrink-0">
-                                    <i class="fa-solid fa-camera"></i><input type="file" id="new-item-image" accept="image/*" onchange="previewImageName(this)">
+                                    <i class="fa-solid fa-camera"></i><input type="file" id="new-item-image" accept="image/*" onchange="window.previewImageName(this)">
                                 </div>
-                                <input type="text" id="new-item-name" class="flex-1 px-4 py-3 rounded-xl border border-gray-200 text-sm focus:border-pink-500 outline-none" placeholder="اسم الصنف">
+                                <div class="flex-1 space-y-2">
+                                    <div class="flex gap-2">
+                                        <input type="text" id="new-item-name" class="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-pink-500 outline-none" placeholder="اسم الصنف">
+                                        <button onclick="window.generateAIItemName()" id="ai-name-btn" class="bg-purple-100 text-purple-600 px-3 rounded-xl hover:bg-purple-200 transition-colors shrink-0" title="✨ تحسين الاسم بالذكاء الاصطناعي"><i class="fa-solid fa-wand-magic-sparkles"></i></button>
+                                    </div>
+                                    <input type="text" id="new-item-category" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-pink-500 outline-none" placeholder="اسم القسم (مثال: وجبات، مشروبات)">
+                                </div>
                             </div>
                             <p id="image-preview-name" class="text-[9px] text-green-600 hidden font-bold ml-1"></p>
-                            <input type="number" id="new-item-price" class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:border-pink-500 outline-none" placeholder="السعر (JOD)">
-                            <button onclick="addMenuItem()" class="w-full bg-pink-600 text-white font-bold py-3 rounded-xl text-sm" id="btn-add-menu">إضافة</button>
+                            
+                            <!-- الإضافات (Addons) -->
+                            <div><input type="text" id="new-item-addons" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-xs focus:border-pink-500 outline-none" placeholder="الإضافات (مثال: جبنة +0.50، دبل +1.00) اختياري"></div>
+                            
+                            <div class="flex gap-2">
+                                <input type="number" id="new-item-price" class="flex-1 px-4 py-3 rounded-xl border border-gray-200 text-sm focus:border-pink-500 outline-none" placeholder="السعر (JOD)">
+                                <label class="flex items-center gap-2 text-xs font-bold text-red-500 bg-red-50 px-3 rounded-xl border border-red-100 cursor-pointer">
+                                    <input type="checkbox" id="new-item-flash" class="w-4 h-4 text-red-500 focus:ring-red-500 border-gray-300 rounded"> عرض فلاش
+                                </label>
+                            </div>
+                            <button onclick="window.addMenuItem()" class="w-full bg-pink-600 text-white font-bold py-3 rounded-xl text-sm" id="btn-add-menu">إضافة للمنيو</button>
                         </div>
                     </div>
-                    <div id="merchant-menu-list" class="space-y-3"></div>
+                    <div><h3 class="font-bold text-gray-800 mb-3 px-1 text-sm">الأصناف الحالية</h3><div id="merchant-menu-list" class="space-y-3"></div></div>
+                </div>
+
+                <div id="merchant-dash-content" class="hidden space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 text-center"><p class="text-xs text-gray-500 font-bold mb-1">مبيعات اليوم</p><p class="text-xl font-black text-pink-600" id="merch-sales-today">0.00 JOD</p></div>
+                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 text-center"><p class="text-xs text-gray-500 font-bold mb-1">مبيعات الشهر</p><p class="text-xl font-black text-gray-800" id="merch-sales-month">0.00 JOD</p></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -266,8 +348,8 @@
                         <h2 class="text-xl font-black text-white"><span id="captain-name-display">الاسم</span> <i class="fa-solid fa-motorcycle text-orange-500 ml-1"></i></h2>
                     </div>
                     <div class="flex gap-2">
-                        <button onclick="openNotificationsModal()" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center relative"><i class="fa-solid fa-bell"></i><span id="capt-notif-badge" class="hidden absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span></button>
-                        <button onclick="logout()" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-red-500 transition-colors"><i class="fa-solid fa-power-off"></i></button>
+                        <button onclick="window.openNotificationsModal()" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center relative"><i class="fa-solid fa-bell"></i><span id="capt-notif-badge" class="hidden absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span></button>
+                        <button onclick="window.logout()" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-red-500 transition-colors"><i class="fa-solid fa-power-off"></i></button>
                     </div>
                 </div>
                 
@@ -277,7 +359,7 @@
                         <p class="text-xl font-black text-green-400"><span id="captain-wallet-display">0.00</span> <span class="text-sm">JOD</span></p>
                     </div>
                     <div class="text-center">
-                        <p class="text-[10px] text-gray-400 mb-1">تقييمك</p>
+                        <p class="text-[10px] text-gray-400 mb-1">التقييم</p>
                         <p class="text-sm font-bold text-yellow-400"><i class="fa-solid fa-star"></i> <span id="captain-rating-display">5.0</span></p>
                     </div>
                 </div>
@@ -299,17 +381,16 @@
             <div class="bg-indigo-900 text-white p-6 rounded-b-[2rem] shadow-xl z-10 shrink-0">
                 <div class="flex justify-between items-center mb-4">
                     <div><p class="text-xs text-indigo-300 mb-1">مركز القيادة (Admin)</p><h2 class="text-2xl font-black">المدير <span id="admin-name-display">معاذ</span> 🛡️</h2></div>
-                    <button onclick="logout()" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-red-500 transition-colors"><i class="fa-solid fa-power-off"></i></button>
+                    <button onclick="window.logout()" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-red-500 transition-colors"><i class="fa-solid fa-power-off"></i></button>
                 </div>
             </div>
             
             <div class="p-4 flex-1 overflow-y-auto hide-scrollbar">
                 <!-- Admin Tabs -->
                 <div class="flex flex-wrap w-full bg-indigo-100 rounded-xl p-1 mb-5 gap-y-1">
-                    <button id="tab-admin-dash" onclick="switchAdminTab('dash')" class="flex-1 min-w-[20%] py-2 text-[11px] font-bold bg-white shadow rounded-lg text-indigo-900 transition-all">الرئيسية</button>
-                    <button id="tab-admin-staff" onclick="switchAdminTab('staff')" class="flex-1 min-w-[20%] py-2 text-[11px] font-bold text-indigo-600 rounded-lg transition-all">الفريق والمتاجر</button>
-                    <button id="tab-admin-finance" onclick="switchAdminTab('finance')" class="flex-1 min-w-[20%] py-2 text-[11px] font-bold text-indigo-600 rounded-lg transition-all relative">المالية <span id="finance-badge" class="hidden absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span></button>
-                    <button id="tab-admin-notifs" onclick="switchAdminTab('notifs')" class="flex-1 min-w-[20%] py-2 text-[11px] font-bold text-indigo-600 rounded-lg transition-all">الإشعارات</button>
+                    <button id="tab-admin-dash" onclick="window.switchAdminTab('dash')" class="flex-1 min-w-[20%] py-2 text-[10px] font-bold bg-white shadow rounded-lg text-indigo-900 transition-all">الرئيسية</button>
+                    <button id="tab-admin-staff" onclick="window.switchAdminTab('staff')" class="flex-1 min-w-[20%] py-2 text-[10px] font-bold text-indigo-600 rounded-lg transition-all">المستخدمين والتعديل</button>
+                    <button id="tab-admin-finance" onclick="window.switchAdminTab('finance')" class="flex-1 min-w-[20%] py-2 text-[10px] font-bold text-indigo-600 rounded-lg transition-all relative">المالية <span id="finance-badge" class="hidden absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span></button>
                 </div>
 
                 <div id="admin-dash-content" class="block space-y-4">
@@ -317,15 +398,19 @@
                         <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100"><h4 class="text-xs font-bold text-gray-500 mb-1">مبيعات المنصة</h4><p class="text-xl font-black text-gray-800"><span id="admin-total-sales">0.00</span></p></div>
                         <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100"><h4 class="text-xs font-bold text-gray-500 mb-1">أرباح الإدارة</h4><p class="text-xl font-black text-green-600"><span id="admin-profits">0.00</span></p></div>
                     </div>
-                    <h3 class="font-bold text-gray-800 border-b pb-2"><i class="fa-solid fa-satellite-dish text-indigo-500"></i> الرادار المباشر</h3>
+                    <div class="flex gap-2">
+                        <button onclick="window.exportCSV()" class="flex-1 bg-green-600 text-white font-bold py-2 rounded-xl text-xs shadow-sm"><i class="fa-solid fa-file-csv mr-1"></i> تصدير الطلبات CSV</button>
+                    </div>
+                    
+                    <h3 class="font-bold text-gray-800 border-b pb-2 mt-4"><i class="fa-solid fa-satellite-dish text-indigo-500"></i> الرادار المباشر</h3>
                     <div id="admin-orders-list" class="space-y-3"></div>
                 </div>
 
-                <!-- إدارة الفريق، المتاجر، وإضافة مدراء جدد -->
+                <!-- إدارة المستخدمين والتعديل الكامل -->
                 <div id="admin-staff-content" class="hidden space-y-5">
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-3">
-                        <h3 class="font-bold text-gray-800 text-sm border-b pb-3"><i class="fa-solid fa-user-plus text-indigo-500"></i> إضافة موظف / متجر / مدير</h3>
-                        <select id="new-staff-role" onchange="toggleMerchantCategory()" class="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 outline-none">
+                        <h3 class="font-bold text-gray-800 text-sm border-b pb-3"><i class="fa-solid fa-user-plus text-indigo-500"></i> إضافة عضو للنظام</h3>
+                        <select id="new-staff-role" onchange="window.toggleMerchantCategory()" class="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 outline-none">
                             <option value="merchant">متجر 🏪</option>
                             <option value="captain">كابتن توصيل 🛵</option>
                             <option value="admin">مدير نظام 🛡️</option>
@@ -338,38 +423,26 @@
                             </select>
                         </div>
                         <input type="text" id="new-staff-name" class="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 outline-none" placeholder="الاسم (للمدير أو المتجر)">
-                        <!-- خانة المعرف تظهر للمدير فقط لتعيين ID مخصص -->
-                        <input type="text" id="new-staff-worknum" class="hidden w-full px-3 py-2 text-sm rounded-xl border border-indigo-200 outline-none bg-indigo-50" placeholder="معرف الإدارة (مثال: admin_1)">
+                        <input type="text" id="new-staff-worknum" class="hidden w-full px-3 py-2 text-sm rounded-xl border border-indigo-200 outline-none bg-indigo-50" placeholder="المعرف المخصص (اختياري للإدارة)">
                         <input type="tel" id="new-staff-phone" class="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 outline-none" placeholder="رقم الهاتف">
                         <input type="password" id="new-staff-password" class="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 outline-none" placeholder="كلمة المرور">
-                        <button onclick="registerStaff()" class="w-full bg-indigo-600 text-white font-bold py-2.5 rounded-xl mt-2 text-sm">إضافة واعتماد</button>
+                        <button onclick="window.registerStaff()" class="w-full bg-indigo-600 text-white font-bold py-2.5 rounded-xl mt-2 text-sm">إضافة واعتماد</button>
                     </div>
-                    <h3 class="font-bold text-gray-800 text-sm">الفريق والمتاجر (شحن/حظر)</h3>
-                    <div id="admin-staff-list" class="space-y-3"></div>
+                    
+                    <!-- فرز المستخدمين -->
+                    <h3 class="font-bold text-gray-800 text-sm">إدارة مستخدمي النظام</h3>
+                    <div id="admin-staff-list" class="space-y-4"></div>
                 </div>
 
                 <div id="admin-finance-content" class="hidden space-y-4">
                     <h3 class="font-bold text-gray-800 border-b pb-2 text-sm"><i class="fa-solid fa-money-bill-transfer text-indigo-500"></i> طلبات تحويل النقاط (الزبائن)</h3>
-                    <div id="admin-points-requests" class="space-y-3"></div>
-                </div>
-
-                <div id="admin-notifs-content" class="hidden space-y-5">
+                    <div id="admin-points-requests" class="space-y-3 mb-6"></div>
+                    
+                    <h3 class="font-bold text-gray-800 border-b pb-2 text-sm mt-6"><i class="fa-solid fa-paper-plane text-indigo-500"></i> إرسال إشعارات</h3>
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-3">
-                        <h3 class="font-bold text-gray-800 text-sm border-b pb-3"><i class="fa-solid fa-paper-plane text-indigo-500"></i> مركز بث الإشعارات</h3>
-                        <div>
-                            <label class="block text-[10px] font-bold text-gray-500 mb-1">المُستلم</label>
-                            <select id="admin-notif-target" class="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 outline-none">
-                                <option value="all">الجميع (كباتن، متاجر، زبائن)</option>
-                                <option value="captains">جميع الكباتن</option>
-                                <option value="merchants">جميع المتاجر</option>
-                                <option value="customers">جميع الزبائن</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-bold text-gray-500 mb-1">نص الرسالة</label>
-                            <textarea id="admin-notif-msg" rows="3" class="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 outline-none" placeholder="اكتب إشعارك هنا..."></textarea>
-                        </div>
-                        <button onclick="sendAdminNotification()" class="w-full bg-blue-600 text-white font-bold py-2.5 rounded-xl shadow-md text-sm mt-2">إرسال الإشعار فوراً <i class="fa-solid fa-bolt ml-1"></i></button>
+                        <select id="admin-notif-target" class="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 outline-none"><option value="all">الجميع</option><option value="captains">الكباتن</option><option value="merchants">المتاجر</option><option value="customers">الزبائن</option></select>
+                        <textarea id="admin-notif-msg" rows="3" class="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 outline-none" placeholder="اكتب إشعارك..."></textarea>
+                        <button onclick="window.sendAdminNotification()" class="w-full bg-blue-600 text-white font-bold py-2.5 rounded-xl shadow-md text-sm mt-2">إرسال الإشعار <i class="fa-solid fa-bolt ml-1"></i></button>
                     </div>
                 </div>
 
@@ -377,55 +450,96 @@
         </div>
 
         <!-- ==================== نوافذ منبثقة (Modals) ==================== -->
-        
-        <!-- Custom Order -->
-        <div id="custom-order-modal" class="hidden absolute inset-0 bg-gray-900/70 z-[60] flex items-center justify-center backdrop-blur-sm p-4 transition-all">
-            <div class="bg-white w-full rounded-3xl p-6 shadow-2xl relative">
-                <button onclick="closeCustomOrderModal()" class="absolute top-4 left-4 w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-200"><i class="fa-solid fa-xmark"></i></button>
-                <h3 class="font-black text-xl text-gray-800 mb-2"><i class="fa-solid fa-motorcycle text-orange-500 ml-1"></i> توصيل مخصص</h3>
-                <p class="text-xs text-gray-500 mb-5">اطلب أي شيء من أي مكان، والكابتن بيحاسب وبيجيبلك إياه (الدفع عند الاستلام بناءً على الفاتورة).</p>
-                <div class="space-y-4 mb-6">
-                    <div><label class="block text-xs font-bold text-gray-700 mb-1">اسم المتجر / الصيدلية / المكان</label><input type="text" id="custom-place-name" class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:border-orange-500 outline-none" placeholder="مثال: مخبز الأمل"></div>
-                    <div><label class="block text-xs font-bold text-gray-700 mb-1">ماذا تريد أن نشتري لك بالتفصيل؟</label><textarea id="custom-item-name" rows="3" class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:border-orange-500 outline-none" placeholder="مثال: ربطتين خبز، وكيلو حليب..."></textarea></div>
-                    <div class="bg-orange-50 p-3 rounded-xl border border-orange-100 flex items-start gap-2"><i class="fa-solid fa-circle-info text-orange-500 mt-0.5"></i><p class="text-[10px] text-orange-800 font-bold leading-tight">سعر التوصيل الثابت للطلبات المخصصة هو 1.50 JOD. قيمة الأغراض ستدفعها للكابتن عند استلام الفاتورة.</p></div>
-                </div>
-                <button onclick="confirmCustomOrder()" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-black py-3.5 rounded-xl shadow-lg text-sm">إرسال الطلب للكباتن 🚀</button>
-            </div>
-        </div>
 
-        <!-- Checkout -->
-        <div id="checkout-modal" class="hidden absolute inset-0 bg-gray-900/60 z-[60] flex items-end justify-center backdrop-blur-sm transition-all">
-            <div class="bg-white w-full rounded-t-[2rem] p-6 shadow-2xl">
-                <div class="flex justify-between items-center mb-4 border-b pb-3">
-                    <h3 class="font-black text-xl text-gray-800">تأكيد الطلب</h3>
-                    <button onclick="closeCheckout()" class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500"><i class="fa-solid fa-xmark"></i></button>
-                </div>
-                <div class="mb-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
-                    <p class="font-bold text-gray-800 text-sm mb-1" id="checkout-item-name"></p>
-                    <div class="flex justify-between text-xs text-gray-500 mb-1"><span>سعر الطلب:</span><span id="checkout-item-price" class="font-bold text-gray-800"></span></div>
-                    <div class="flex justify-between text-xs text-gray-500 mb-2 border-b border-gray-200 pb-2"><span>أجرة التوصيل:</span><span class="font-bold text-gray-800">1.00 JOD</span></div>
+        <!-- نافذة تعديل بيانات المستخدم (صلاحيات الإدارة المطلقة) -->
+        <div id="admin-edit-modal" class="hidden absolute inset-0 bg-gray-900/80 z-[90] flex items-center justify-center backdrop-blur-sm p-4 transition-all">
+            <div class="bg-white w-full rounded-3xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto hide-scrollbar">
+                <button onclick="window.closeAdminEdit()" class="absolute top-4 left-4 w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-200"><i class="fa-solid fa-xmark"></i></button>
+                <h3 class="font-black text-xl text-indigo-900 mb-4 border-b pb-3"><i class="fa-solid fa-user-pen ml-1"></i> تعديل بيانات المستخدم</h3>
+                
+                <input type="hidden" id="edit-user-id">
+                <input type="hidden" id="edit-user-col">
+                
+                <div class="space-y-3">
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">الاسم</label><input type="text" id="edit-user-name" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-indigo-500 outline-none"></div>
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">المعرف (أرقام فقط)</label><input type="number" id="edit-user-worknum" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-indigo-500 outline-none" placeholder="لا يوجد"></div>
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">رقم الهاتف</label><input type="tel" id="edit-user-phone" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-indigo-500 outline-none"></div>
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">كلمة المرور الجديدة</label><input type="text" id="edit-user-pass" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-indigo-500 outline-none"></div>
                     
-                    <div class="flex items-center justify-between mt-3 bg-green-50 p-2 rounded border border-green-100" id="checkout-wallet-section">
-                        <span class="text-xs font-bold text-green-800">استخدام رصيد محفظتي (<span id="checkout-wallet-bal">0</span> JOD)</span>
-                        <input type="checkbox" id="checkout-use-wallet" onchange="toggleWalletDiscount()" class="w-4 h-4 text-green-500 rounded focus:ring-green-500">
+                    <div class="grid grid-cols-2 gap-3 pt-3 border-t">
+                        <div><label class="block text-xs font-bold text-green-700 mb-1">رصيد المحفظة (JOD)</label><input type="number" step="0.01" id="edit-user-wallet" class="w-full px-4 py-2.5 rounded-xl border border-green-200 bg-green-50 text-sm focus:border-green-500 outline-none font-bold text-green-700"></div>
+                        <div><label class="block text-xs font-bold text-yellow-700 mb-1">نقاط الولاء</label><input type="number" id="edit-user-points" class="w-full px-4 py-2.5 rounded-xl border border-yellow-200 bg-yellow-50 text-sm focus:border-yellow-500 outline-none font-bold text-yellow-700"></div>
                     </div>
                 </div>
-                <div class="flex justify-between items-center mb-6"><span class="font-bold text-gray-600">المطلوب دفعه نقداً:</span><span class="font-black text-2xl text-blue-600" id="checkout-total-price"></span></div>
-                <button id="checkout-confirm-btn" class="w-full bg-blue-600 text-white font-black py-4 rounded-xl shadow-lg text-lg">تأكيد وإرسال للمتجر</button>
+                <button onclick="window.saveAdminEdit()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3.5 rounded-xl shadow-lg text-sm mt-6">حفظ التعديلات ✅</button>
             </div>
         </div>
 
-        <!-- Rating Modal -->
+        <!-- نافذة تأكيد الحذف النهائي -->
+        <div id="delete-confirm-modal" class="hidden absolute inset-0 bg-gray-900/80 z-[100] flex items-center justify-center backdrop-blur-sm p-4 transition-all">
+            <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl text-center">
+                <div class="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center text-3xl mx-auto mb-4"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                <h3 class="font-black text-xl text-gray-800 mb-2">تأكيد الحذف</h3>
+                <p class="text-xs text-gray-500 mb-6">هل أنت متأكد من حذف هذا الحساب نهائياً؟ لا يمكن التراجع عن هذا الإجراء.</p>
+                <div class="flex gap-3">
+                    <button onclick="window.executeDeleteUser()" class="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-xl shadow-lg text-sm">نعم، احذف</button>
+                    <button onclick="document.getElementById('delete-confirm-modal').classList.add('hidden')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 rounded-xl shadow-sm text-sm">إلغاء</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- نافذة السلة قبل الطلب (Checkout Cart) -->
+        <div id="checkout-modal" class="hidden absolute inset-0 bg-gray-900/60 z-[60] flex items-end justify-center backdrop-blur-sm transition-all">
+            <div class="bg-white w-full rounded-t-[2rem] p-6 shadow-2xl max-h-[90vh] overflow-y-auto hide-scrollbar">
+                <div class="flex justify-between items-center mb-4 border-b pb-3">
+                    <h3 class="font-black text-xl text-gray-800">تأكيد الطلب</h3>
+                    <button onclick="window.closeCheckout()" class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                
+                <div class="mb-4 bg-gray-50 p-4 rounded-xl border border-gray-100 space-y-3">
+                    <div id="checkout-items-summary" class="text-sm font-bold text-gray-700 mb-2 border-b pb-2"></div>
+                    <div class="flex justify-between text-xs text-gray-500 mb-1"><span>سعر الطلب:</span><span id="checkout-item-price" class="font-bold text-gray-800"></span></div>
+                    <div class="flex justify-between text-xs text-gray-500 pb-2 border-b border-gray-200"><span>أجرة التوصيل الثابتة:</span><span class="font-bold text-gray-800">1.00 JOD</span></div>
+                    
+                    <!-- التوقيت المجدول والملاحظات -->
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-600 mb-1">وقت التوصيل</label>
+                        <select id="checkout-time" class="w-full px-3 py-2 rounded-lg border border-gray-200 text-xs font-bold text-indigo-700 outline-none">
+                            <option value="now">أسرع وقت ممكن (الآن)</option>
+                            <option value="tomorrow_14">مجدول: غداً الساعة 2:00 ظهراً</option>
+                        </select>
+                    </div>
+                    <div><textarea id="checkout-notes" rows="2" class="w-full px-3 py-2 rounded-lg border border-gray-200 text-xs outline-none focus:border-indigo-500" placeholder="ملاحظات للمطعم (بدون بصل، كثر صوص...)"></textarea></div>
+
+                    <div class="flex items-center justify-between mt-2 bg-green-50 p-2 rounded border border-green-100" id="checkout-wallet-section">
+                        <span class="text-xs font-bold text-green-800">استخدام رصيد محفظتي (<span id="checkout-wallet-bal">0</span> JOD)</span>
+                        <input type="checkbox" id="checkout-use-wallet" onchange="window.toggleWalletDiscount()" class="w-4 h-4 text-green-500 rounded focus:ring-green-500">
+                    </div>
+                </div>
+                <div class="flex justify-between items-center mb-6"><span class="font-bold text-gray-600 text-sm">المطلوب دفعه نقداً:</span><span class="font-black text-2xl text-blue-600" id="checkout-total-price"></span></div>
+                <button id="checkout-confirm-btn" onclick="window.confirmOrderPlacement()" class="w-full bg-blue-600 text-white font-black py-4 rounded-xl shadow-lg text-lg">إرسال الطلب</button>
+            </div>
+        </div>
+
+        <!-- Rating Modal (Detailed) -->
         <div id="rating-modal" class="hidden absolute inset-0 bg-gray-900/70 z-[70] flex items-center justify-center backdrop-blur-sm p-4 transition-all">
-            <div class="bg-white w-full rounded-3xl p-6 shadow-2xl text-center">
+            <div class="bg-white w-full rounded-3xl p-6 shadow-2xl text-center max-h-[90vh] overflow-y-auto hide-scrollbar">
                 <div class="w-16 h-16 bg-yellow-100 text-yellow-500 rounded-full flex items-center justify-center text-3xl mx-auto mb-4"><i class="fa-solid fa-star"></i></div>
                 <h3 class="font-black text-xl text-gray-800 mb-1">تم التوصيل بنجاح!</h3>
-                <p class="text-xs text-gray-500 mb-5">كيف كانت تجربتك مع الكابتن؟ تقييمك يحسن جودة الخدمة.</p>
-                <div class="flex justify-center gap-2 mb-6 star-rating" id="rating-stars-container">
-                    <i class="fa-solid fa-star text-4xl" data-val="1" onclick="selectRating(1)"></i><i class="fa-solid fa-star text-4xl" data-val="2" onclick="selectRating(2)"></i><i class="fa-solid fa-star text-4xl" data-val="3" onclick="selectRating(3)"></i><i class="fa-solid fa-star text-4xl" data-val="4" onclick="selectRating(4)"></i><i class="fa-solid fa-star text-4xl" data-val="5" onclick="selectRating(5)"></i>
+                <p class="text-xs text-gray-500 mb-4">تقييمك يفيدنا جداً في تحسين الجودة.</p>
+                
+                <div class="space-y-4 mb-6 text-right">
+                    <div>
+                        <p class="text-xs font-bold text-gray-700 mb-1 text-center">تقييم الكابتن (السرعة والتعامل)</p>
+                        <div class="flex gap-2 star-rating text-2xl justify-center" id="rating-captain-stars"><i class="fa-solid fa-star active" data-val="1" onclick="window.selectRating('cap', 1)"></i><i class="fa-solid fa-star active" data-val="2" onclick="window.selectRating('cap', 2)"></i><i class="fa-solid fa-star active" data-val="3" onclick="window.selectRating('cap', 3)"></i><i class="fa-solid fa-star active" data-val="4" onclick="window.selectRating('cap', 4)"></i><i class="fa-solid fa-star active" data-val="5" onclick="window.selectRating('cap', 5)"></i></div>
+                    </div>
+                    <div class="border-t pt-3">
+                        <p class="text-xs font-bold text-gray-700 mb-1 text-center">تقييم المتجر (الطعم والتغليف)</p>
+                        <div class="flex gap-2 star-rating text-2xl justify-center" id="rating-merchant-stars"><i class="fa-solid fa-star active" data-val="1" onclick="window.selectRating('merch', 1)"></i><i class="fa-solid fa-star active" data-val="2" onclick="window.selectRating('merch', 2)"></i><i class="fa-solid fa-star active" data-val="3" onclick="window.selectRating('merch', 3)"></i><i class="fa-solid fa-star active" data-val="4" onclick="window.selectRating('merch', 4)"></i><i class="fa-solid fa-star active" data-val="5" onclick="window.selectRating('merch', 5)"></i></div>
+                    </div>
                 </div>
-                <button onclick="submitRating()" class="w-full bg-gray-900 hover:bg-black text-white font-bold py-3.5 rounded-xl shadow-lg text-sm mb-2">إرسال التقييم</button>
-                <button onclick="closeRatingModal()" class="w-full bg-transparent text-gray-500 font-bold py-2 text-sm">تخطي</button>
+                <button onclick="window.submitRating()" class="w-full bg-gray-900 text-white font-bold py-3.5 rounded-xl shadow-lg text-sm mb-2">إرسال التقييم</button>
+                <button onclick="window.closeRatingModal()" class="w-full bg-transparent text-gray-500 font-bold py-2 text-sm">تخطي</button>
             </div>
         </div>
 
@@ -434,7 +548,7 @@
             <div class="bg-white w-full h-3/4 rounded-t-[2rem] shadow-2xl flex flex-col">
                 <div class="p-5 border-b flex justify-between items-center bg-gray-50 rounded-t-[2rem]">
                     <h3 class="font-black text-lg text-gray-800"><i class="fa-solid fa-bell text-red-500 ml-1"></i> الإشعارات</h3>
-                    <button onclick="closeNotificationsModal()" class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-gray-600"><i class="fa-solid fa-xmark"></i></button>
+                    <button onclick="window.closeNotificationsModal()" class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-gray-600"><i class="fa-solid fa-xmark"></i></button>
                 </div>
                 <div id="notifications-list" class="flex-1 overflow-y-auto p-4 space-y-3 hide-scrollbar"></div>
             </div>
@@ -443,24 +557,24 @@
         <!-- Chat Modal -->
         <div id="chat-modal" class="hidden absolute inset-0 bg-white z-[60] flex flex-col transition-all">
             <div class="bg-blue-600 text-white p-4 flex justify-between items-center shadow-md pt-6">
-                <div class="flex items-center gap-3"><button onclick="closeChat()" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/20"><i class="fa-solid fa-arrow-right"></i></button><div><h3 class="font-bold text-sm" id="chat-title">محادثة</h3></div></div>
+                <div class="flex items-center gap-3"><button onclick="window.closeChat()" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/20"><i class="fa-solid fa-arrow-right"></i></button><div><h3 class="font-bold text-sm" id="chat-title">محادثة</h3></div></div>
                 <a href="#" id="chat-call-btn" class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center shadow"><i class="fa-solid fa-phone text-xs"></i></a>
             </div>
             <div id="chat-messages" class="flex-1 overflow-y-auto p-4 flex flex-col gap-3 bg-gray-50 hide-scrollbar"></div>
             <div class="p-3 bg-white border-t flex gap-2 items-center">
                 <input type="text" id="chat-input-text" class="flex-1 bg-gray-100 px-4 py-3 rounded-full text-sm outline-none" placeholder="اكتب رسالتك...">
-                <button onclick="sendChatMessage()" class="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center"><i class="fa-solid fa-paper-plane text-sm -ml-1"></i></button>
+                <button onclick="window.sendChatMessage()" class="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center"><i class="fa-solid fa-paper-plane text-sm -ml-1"></i></button>
             </div>
         </div>
-
     </div>
 
     <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, getDocs, setDoc, query, where, serverTimestamp, arrayUnion } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, getDocs, query, where, serverTimestamp, arrayUnion } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // ==================== CONFIGURATION ====================
         const firebaseConfig = {
           apiKey: "AIzaSyC8_o7E8xN6ba-_guVf0izSBNwlgdHcXL4",
           authDomain: "qutaiba-express.firebaseapp.com",
@@ -472,23 +586,25 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'qutaiba-express';
         const getCollection = (colName) => collection(db, colName);
         const getDocRef = (colName, docId) => doc(db, colName, docId);
 
+        // ==================== GLOBAL STATE VARIABLES ====================
         let currentUser = null; let currentUserData = null; let currentUserRole = '';
         let allOrders = [], allStaff = [], allUsers = [], allMenu = [], allPromos = [], allNotifications = [], allPointRequests = [];
+        let unsubs = [];
+        let customerCart = []; 
+        let currentStoreViewId = null; 
         let appSettings = { name: 'فزعــة', logo: '' };
         let currentCustCategory = 'all'; 
-        
         let checkoutItem = null, checkoutBasePrice = 0, checkoutDelivery = 1.00;
         let walletDiscountActive = false, appliedWalletDiscount = 0;
-        let currentChatOrderId = null, ratingTargetOrderId = null, ratingTargetCaptainId = null, currentStarVal = 5;
+        let currentChatOrderId = null, ratingTargetOrderId = null, ratingTargetCaptainId = null, ratingTargetMerchantId = null;
+        let captStarVal = 5, merchStarVal = 5;
+        let targetDeleteId = null, targetDeleteCol = null;
         
         const DEDUCTION_RATE = 0.07, MIN_WALLET_BALANCE = 0.07; 
-        let captainEarnings = 0, adminCommissionRate = 0.10; 
-        let isMerchantOnline = true, isCaptainOnline = true;
+        let adminCommissionRate = 0.10; 
         
         const statusMap = {
             'pending': { text: 'بانتظار المتجر', color: 'bg-yellow-100 text-yellow-700' },
@@ -499,430 +615,459 @@
         };
 
         const categoryIcons = {
-            'restaurant': '<i class="fa-solid fa-utensils text-3xl text-orange-400 drop-shadow-sm"></i>',
+            'restaurant': '<i class="fa-solid fa-burger text-3xl text-orange-400 drop-shadow-sm"></i>',
             'market': '<i class="fa-solid fa-basket-shopping text-3xl text-blue-400 drop-shadow-sm"></i>',
-            'pharmacy': '<i class="fa-solid fa-pills text-3xl text-green-400 drop-shadow-sm"></i>'
+            'pharmacy': '<i class="fa-solid fa-pills text-3xl text-green-400 drop-shadow-sm"></i>',
+            'school': '<i class="fa-solid fa-graduation-cap text-3xl text-indigo-400 drop-shadow-sm"></i>',
+            'productive': '<i class="fa-solid fa-house-chimney-window text-3xl text-pink-400 drop-shadow-sm"></i>',
+            'gas': '<i class="fa-solid fa-fire-flame-simple text-3xl text-red-500 drop-shadow-sm"></i>'
         };
 
-        const initAuth = async () => { try { await signInAnonymously(auth); } catch(e) { console.error("Auth error:", e); } };
-        initAuth();
-        onAuthStateChanged(auth, (user) => { if (user) { currentUser = user; startFirestoreListeners(); } });
+        // ==================== BINDING ALL FUNCTIONS TO WINDOW FIRST ====================
+        
+        window.showToast = function(msg, type = 'info', img = null) { 
+            const toast = document.getElementById('toast'); const tMsg = document.getElementById('toast-msg'); const tImg = document.getElementById('toast-img');
+            if(!toast || !tMsg) return; 
+            tMsg.innerText = msg; 
+            if(img && tImg) { tImg.src = img; tImg.classList.remove('hidden'); } else if (tImg) { tImg.classList.add('hidden'); }
+            const style = {'success':{bg:'bg-green-600', ic:'fa-check-circle'},'error':{bg:'bg-red-600', ic:'fa-triangle-exclamation'},'info':{bg:'bg-gray-900', ic:'fa-bell'}}; 
+            toast.className = `absolute top-6 left-1/2 transform -translate-x-1/2 ${style[type].bg} text-white px-5 py-3 rounded-2xl shadow-2xl transition-all duration-300 opacity-0 z-[100] flex flex-col items-center gap-2 text-sm font-bold min-w-[250px] text-center`; 
+            document.getElementById('toast-icon').innerHTML = `<i class="fa-solid ${style[type].ic}"></i>`; 
+            toast.classList.remove('opacity-0', '-translate-y-4'); toast.classList.add('translate-y-0'); 
+            setTimeout(() => { toast.classList.add('opacity-0', '-translate-y-4'); toast.classList.remove('translate-y-0'); }, 4500); 
+        };
 
-        let unsubs = [];
-        function startFirestoreListeners() {
+        window.updateUI = function() {
+            if (currentUserRole === 'customer') window.renderCustomer();
+            if (currentUserRole === 'merchant') window.renderMerchant();
+            if (currentUserRole === 'captain') window.renderCaptain();
+            if (currentUserRole === 'admin' || currentUserRole === 'support') window.renderAdmin();
+        };
+
+        // --- Notifications ---
+        window.openNotificationsModal = function() { const m = document.getElementById('notifications-modal'); if(m) m.classList.remove('hidden'); };
+        window.closeNotificationsModal = function() { 
+            const m = document.getElementById('notifications-modal'); if(m) m.classList.add('hidden'); 
+            if(currentUserRole === 'customer') { const b = document.getElementById('cust-notif-badge'); if(b) b.classList.add('hidden'); } 
+            if(currentUserRole === 'merchant') { const b = document.getElementById('merch-notif-badge'); if(b) b.classList.add('hidden'); } 
+            if(currentUserRole === 'captain') { const b = document.getElementById('capt-notif-badge'); if(b) b.classList.add('hidden'); } 
+        };
+
+        window.renderCustomer = function() {
+            let searchTerm = document.getElementById('cust-search')?.value.toLowerCase() || '';
+            let sortOrder = document.getElementById('cust-sort')?.value || 'none';
+
+            // Flash Sales
+            const flashContainer = document.getElementById('flash-sales-container');
+            const flashList = document.getElementById('flash-sales-list');
+            const flashItems = allMenu.filter(m => m.isFlashSale && !m.isSoldOut);
+            if(flashItems.length > 0 && flashList) {
+                if(flashContainer) flashContainer.classList.remove('hidden');
+                flashList.innerHTML = flashItems.map(m => `<div class="bg-red-500 text-white p-2 rounded-xl min-w-[120px] shadow border border-red-400"> <p class="text-[10px] font-bold truncate">${m.name}</p><p class="text-xs font-black">${m.price} JOD 🔥</p><button onclick="window.addToCart('${m.name}', ${m.price}, '${m.merchantName}', '${m.merchantId}')" class="w-full mt-1 bg-white text-red-600 text-[10px] font-bold py-1 rounded">إضافة للسلة</button></div>`).join('');
+            } else if(flashContainer) flashContainer.classList.add('hidden');
+
+            const menuList = document.getElementById('customer-menu-list'); 
+            
+            if(currentStoreViewId === null) {
+                const storesView = document.getElementById('cust-stores-view');
+                const menuView = document.getElementById('cust-menu-view');
+                if(storesView) storesView.classList.remove('hidden');
+                if(menuView) menuView.classList.add('hidden');
+                
+                const storesList = document.getElementById('customer-stores-list');
+                let merchants = allStaff.filter(s => s.role === 'merchant');
+                if(currentCustCategory !== 'all') merchants = merchants.filter(m => m.businessType === currentCustCategory);
+                if(searchTerm) merchants = merchants.filter(m => m.name.toLowerCase().includes(searchTerm));
+                
+                if(storesList) {
+                    if(merchants.length > 0) {
+                        storesList.innerHTML = merchants.map(m => {
+                            const isOffline = !m.isOnline;
+                            return `<div onclick="${isOffline ? '' : `window.openStore('${m.id}', '${m.name}')`}" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center relative transition-transform ${isOffline ? 'opacity-60 grayscale' : 'cursor-pointer hover:shadow-md hover:-translate-y-1'}"> ${isOffline ? '<span class="absolute top-2 left-2 bg-red-500 text-white text-[9px] px-2 rounded font-bold z-10">مغلق</span>' : ''} <div class="w-16 h-16 bg-gray-50 rounded-full mb-3 flex items-center justify-center">${categoryIcons[m.businessType] || categoryIcons['restaurant']}</div> <h4 class="font-black text-gray-800 text-sm text-center leading-snug">${m.name}</h4> </div>`;
+                        }).join('');
+                    } else { storesList.innerHTML = '<p class="col-span-2 text-center text-xs text-gray-400 py-4">لا يوجد متاجر حالياً</p>'; }
+                }
+            } else {
+                const storesView = document.getElementById('cust-stores-view');
+                const menuView = document.getElementById('cust-menu-view');
+                if(storesView) storesView.classList.add('hidden');
+                if(menuView) menuView.classList.remove('hidden');
+                
+                const menuItemsList = document.getElementById('customer-menu-items-list');
+                let storeMenu = allMenu.filter(m => m.merchantId === currentStoreViewId);
+                if(searchTerm) storeMenu = storeMenu.filter(m => m.name.toLowerCase().includes(searchTerm));
+                if(sortOrder === 'asc') storeMenu.sort((a,b) => a.price - b.price);
+                if(sortOrder === 'desc') storeMenu.sort((a,b) => b.price - a.price);
+
+                if(menuItemsList) {
+                    if(storeMenu.length > 0) {
+                        const grouped = storeMenu.reduce((acc, item) => { const cat = item.category || 'أصناف عامة'; if(!acc[cat]) acc[cat] = []; acc[cat].push(item); return acc; }, {});
+                        let html = '';
+                        for(const [catName, items] of Object.entries(grouped)) {
+                            html += `<div class="mb-6"><h4 class="font-black text-indigo-900 text-sm mb-3 border-r-4 border-orange-500 pr-2">${catName}</h4><div class="grid grid-cols-2 gap-3">`;
+                            html += items.map(item => `<div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between relative"> ${item.isSoldOut ? '<span class="absolute top-2 left-2 bg-red-500 text-white text-[9px] px-2 rounded font-bold z-10">نفد</span>' : ''} <div> ${item.image ? `<img src="${item.image}" class="w-full h-16 object-cover rounded-xl mb-2 ${item.isSoldOut ? 'grayscale opacity-50' : ''}">` : ''} <h4 class="font-bold text-gray-800 text-[13px] leading-snug">${item.name}</h4> <p class="text-[9px] text-gray-400 truncate">${item.addons || ''}</p> <p class="text-blue-600 font-black text-sm my-1">${item.price.toFixed(2)} JOD</p> </div> ${item.isSoldOut ? `<button disabled class="w-full bg-gray-200 text-gray-500 text-[11px] font-bold py-2 mt-2 rounded-lg">نفدت الكمية</button>` : `<button onclick="window.addToCart('${item.name}', ${item.price}, '${item.merchantName}', '${item.merchantId}')" class="w-full bg-indigo-600 text-white text-[11px] font-bold py-2 mt-2 rounded-lg shadow-sm hover:bg-indigo-700">إضافة للسلة <i class="fa-solid fa-plus"></i></button>`} </div>`).join('');
+                            html += `</div></div>`;
+                        }
+                        menuItemsList.innerHTML = html;
+                    } else { menuItemsList.innerHTML = '<p class="text-center text-xs text-gray-400 py-4">لا يوجد أصناف في هذا المتجر</p>'; }
+                }
+            }
+            window.renderCartView();
+        };
+
+        window.openStore = function(storeId, storeName) { currentStoreViewId = storeId; const title = document.getElementById('store-menu-title'); if(title) title.innerText = storeName; window.renderCustomer(); };
+        window.closeStoreMenu = function() { currentStoreViewId = null; window.renderCustomer(); };
+        
+        window.setCustCategory = function(cat) { 
+            currentCustCategory = cat; 
+            document.querySelectorAll('.cat-btn').forEach(btn => { btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-md'); btn.classList.add('bg-white', 'text-gray-600'); }); 
+            const b = document.getElementById(`btn-cat-${cat}`); 
+            if(b) { b.classList.remove('bg-white', 'text-gray-600'); b.classList.add('bg-indigo-600', 'text-white', 'shadow-md'); } 
+            window.renderCustomer(); 
+        };
+
+        window.addToCart = function(name, price, mName, mId) {
+            if(customerCart.length > 0 && customerCart[0].mId !== mId) return window.showToast('لا يمكن إضافة منتجات من متاجر مختلفة في نفس السلة.', 'error');
+            customerCart.push({ name, price, mName, mId }); window.showToast('تمت الإضافة للسلة 🛒', 'success');
+            const b = document.getElementById('cart-badge'); if(b) b.classList.remove('hidden'); window.renderCartView();
+        };
+
+        window.renderCartView = function() {
+            const cartList = document.getElementById('real-cart-list'); const btnGoCheckout = document.getElementById('btn-go-checkout');
+            if(cartList) {
+                if(customerCart.length === 0) {
+                    cartList.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">سلتك فارغة حالياً.</p>`; if(btnGoCheckout) btnGoCheckout.classList.add('hidden');
+                } else {
+                    let total = 0;
+                    let html = customerCart.map((c, index) => { total += c.price; return `<div class="bg-white p-3 rounded-xl border border-gray-200 flex justify-between items-center shadow-sm"> <div><p class="text-sm font-bold text-gray-800">${c.name}</p><p class="text-[10px] text-gray-500">${c.mName}</p></div> <div class="flex items-center gap-3"><span class="text-sm font-black text-indigo-600">${c.price.toFixed(2)}</span> <button onclick="window.removeFromCart(${index})" class="text-red-500 hover:text-red-700 bg-red-50 p-1.5 rounded"><i class="fa-solid fa-trash text-xs"></i></button></div> </div>`; }).join('');
+                    html += `<div class="text-left mt-2"><span class="text-xs font-bold text-gray-600">المجموع الفرعي: </span><span class="font-black text-lg text-gray-900">${total.toFixed(2)} JOD</span></div>`;
+                    cartList.innerHTML = html; if(btnGoCheckout) btnGoCheckout.classList.remove('hidden');
+                }
+            }
+
+            const list = document.getElementById('customer-orders-list'); const myOrders = allOrders.filter(o => o.customerId === (currentUserData?.uid || 'demo_cust'));
+            if(list) {
+                if (myOrders.length === 0) { list.innerHTML = `<div class="text-center py-10 opacity-50"><i class="fa-solid fa-clock-rotate-left text-4xl mb-3 text-gray-300"></i><p class="text-sm font-bold text-gray-400">لا يوجد طلبات سابقة</p></div>`; }
+                else {
+                    list.innerHTML = myOrders.map(order => `
+                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 relative">
+                            <div class="flex justify-between items-center mb-3"><span class="font-bold text-gray-800 text-sm">#${order.id.substring(0,5)}</span><span class="text-[10px] px-2 py-1 rounded-md font-bold ${statusMap[order.status]?.color || 'bg-gray-100 text-gray-700'}">${statusMap[order.status]?.text || 'غير معروف'}</span></div>
+                            <p class="text-xs font-bold text-gray-600 mb-2 bg-gray-50 p-2 rounded-lg leading-relaxed">${(order.item || '').replace(/\n/g, '<br>')}</p>
+                            ${order.notes ? `<p class="text-[10px] text-orange-600 font-bold mb-2"><i class="fa-solid fa-note-sticky"></i> ${order.notes}</p>` : ''}
+                            ${order.scheduledTime && order.scheduledTime !== 'now' ? `<p class="text-[10px] text-blue-600 font-bold mb-2"><i class="fa-solid fa-clock"></i> طلب مجدول</p>` : ''}
+                            <div class="flex justify-between items-center border-t border-gray-100 pt-3 mt-2">
+                                <span class="font-black text-blue-600 text-sm">${order.type === 'custom' ? 'الدفع عالفاتورة' : (order.cashToPay !== undefined ? order.cashToPay.toFixed(2) : (order.price + order.deliveryFee).toFixed(2)) + ' JOD'}</span>
+                                <div class="flex gap-1 flex-wrap justify-end max-w-[60%]">
+                                    ${order.status === 'on_the_way' ? `<button onclick="window.openChat('${order.id}', '${order.captainPhone||'0000'}')" class="bg-blue-100 text-blue-700 px-2 py-1.5 rounded-lg text-[10px] font-bold shadow-sm hover:bg-blue-200"><i class="fa-solid fa-comments"></i> شات/اتصال</button>` : ''}
+                                    ${order.status === 'delivered' ? `<button onclick="window.reorderItems('${(order.item||'').replace(/'/g, "\\'")}', ${order.price}, '${order.merchantName}', '${order.merchantId}')" class="bg-indigo-100 text-indigo-700 px-2 py-1.5 rounded-lg text-[10px] font-bold shadow-sm hover:bg-indigo-200"><i class="fa-solid fa-rotate-right"></i> إعادة طلب</button>` : ''}
+                                    ${order.status === 'delivered' && !order.rated && order.captainId ? `<button onclick="window.openRatingModal('${order.id}', '${order.captainId}', '${order.merchantId}')" class="bg-yellow-400 text-yellow-900 px-2 py-1.5 rounded-lg text-[10px] font-bold shadow-sm"><i class="fa-solid fa-star"></i> تقييم</button>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            }
+
+            // Update profile history list
+            const histList = document.getElementById('profile-order-history');
+            if(histList) {
+                const delOrders = myOrders.filter(o => o.status === 'delivered');
+                if(delOrders.length === 0) {
+                    histList.innerHTML = '<p class="text-xs text-gray-400 text-center py-2">لا يوجد طلبات سابقة</p>';
+                } else {
+                    histList.innerHTML = delOrders.map(o => `
+                        <div class="bg-gray-50 p-2 rounded-xl border border-gray-100 flex justify-between items-center">
+                            <div>
+                                <p class="text-xs font-bold text-gray-800">#${o.id.substring(0,5)} - ${o.merchantName || 'فزعة'}</p>
+                                <p class="text-[9px] text-gray-500">${(o.timestamp?.toDate() || new Date()).toLocaleDateString('ar-JO')}</p>
+                            </div>
+                            <span class="text-xs font-black text-indigo-600">${(o.price + o.deliveryFee).toFixed(2)} JOD</span>
+                        </div>
+                    `).join('');
+                }
+            }
+        };
+
+        window.removeFromCart = function(index) { customerCart.splice(index, 1); window.renderCartView(); if(customerCart.length === 0) { const b = document.getElementById('cart-badge'); if(b) b.classList.add('hidden'); } };
+        window.reorderItems = function(itemsStr, price, mName, mId) { customerCart = []; window.addToCart(itemsStr.split('\n')[0].replace('<br>', ''), price, mName, mId); window.openCheckout(); };
+
+        window.openCheckout = function() {
+            if(customerCart.length === 0) return;
+            const mId = customerCart[0].mId; const mName = customerCart[0].mName; const merchant = allStaff.find(s => s.id === mId);
+            if(merchant && !merchant.isOnline) return window.showToast('عذراً، المتجر مغلق حالياً 🚫', 'error');
+
+            let totalP = 0; let combinedItems = customerCart.map(c => { totalP += c.price; return c.name; }).join(' + \n');
+            checkoutItem = { name: combinedItems, basePrice: totalP, mName: mName, mId: mId }; checkoutBasePrice = totalP; walletDiscountActive = false; appliedWalletDiscount = 0;
+            
+            const summ = document.getElementById('checkout-items-summary'); if(summ) summ.innerHTML = combinedItems.replace(/\n/g, '<br>');
+            const cip = document.getElementById('checkout-item-price'); if(cip) cip.innerText = `${totalP.toFixed(2)} JOD`;
+            const cdf = document.getElementById('checkout-delivery-fee'); if(cdf) cdf.innerText = `${checkoutDelivery.toFixed(2)} JOD`;
+            
+            const wallSec = document.getElementById('checkout-wallet-section'); const cb = document.getElementById('checkout-use-wallet'); const myBal = currentUserData?.walletBalance || 0;
+            if(myBal > 0 && wallSec) { wallSec.classList.remove('hidden'); document.getElementById('checkout-wallet-bal').innerText = myBal.toFixed(2); if(cb) cb.checked = false; } else if(wallSec) { wallSec.classList.add('hidden'); }
+            
+            window.updateCheckoutTotal(); document.getElementById('checkout-modal').classList.remove('hidden');
+        };
+
+        window.renderMerchant = function() {
+            const list = document.getElementById('merchant-orders-list'); const activeOrders = allOrders.filter(o => (o.status === 'pending' || o.status === 'preparing') && o.merchantId === currentUserData?.id);
+            if(list) {
+                if (activeOrders.length === 0) list.innerHTML = '<p class="text-center py-12 text-gray-400 text-sm">لا يوجد طلبات جديدة</p>';
+                else {
+                    list.innerHTML = activeOrders.map(order => `
+                        <div class="bg-white p-4 rounded-2xl shadow-sm border-r-4 ${order.status === 'pending' ? 'border-pink-500' : 'border-orange-500'}">
+                            <div class="flex justify-between items-start mb-3"><div><span class="font-bold text-gray-800 text-sm block">${order.customerName}</span><span class="text-xs text-gray-500">${order.customerPhone}</span></div> <div class="flex gap-2"><button onclick="window.openChat('${order.id}', '${order.customerPhone}')" class="bg-blue-50 text-blue-600 px-2 py-1 rounded text-xs"><i class="fa-solid fa-phone"></i> تواصل</button><button onclick="window.printReceipt('${order.id}')" class="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs"><i class="fa-solid fa-print"></i></button></div></div>
+                            <p class="text-sm font-black bg-pink-50 text-pink-900 p-3 rounded-xl mb-2 text-center leading-relaxed">${(order.item || '').replace(/\n/g, '<br>')}</p>
+                            ${order.notes ? `<p class="text-[11px] font-bold text-red-600 mb-3 bg-red-50 p-2 rounded text-center">ملاحظة الزبون: ${order.notes}</p>` : ''}
+                            ${order.scheduledTime && order.scheduledTime !== 'now' ? `<p class="text-xs font-bold text-blue-600 mb-3 bg-blue-50 p-2 rounded text-center"><i class="fa-solid fa-clock"></i> طلب مجدول!</p>` : ''}
+                            ${order.status === 'pending' ? `<button onclick="window.updateOrderStatus('${order.id}', 'preparing')" class="w-full bg-orange-500 text-white py-3 rounded-xl text-sm font-bold shadow-md">بدء التجهيز</button>` : `<button onclick="window.updateOrderStatus('${order.id}', 'ready')" class="w-full bg-green-500 text-white py-3 rounded-xl text-sm font-bold shadow-md">جاهز، استدعاء الكابتن</button>`}
+                        </div>
+                    `).join('');
+                }
+            }
+            const menuList = document.getElementById('merchant-menu-list'); const myMenu = allMenu.filter(m => m.merchantId === currentUserData?.id);
+            if(menuList) {
+                if(myMenu.length === 0) menuList.innerHTML = '<p class="text-xs text-gray-400">القائمة فارغة</p>';
+                else {
+                    const grouped = myMenu.reduce((acc, i) => { const c = i.category||'عام'; if(!acc[c]) acc[c]=[]; acc[c].push(i); return acc; }, {});
+                    let html = '';
+                    for(const [cat, items] of Object.entries(grouped)) {
+                        html += `<h4 class="font-bold text-xs text-indigo-500 mt-4 mb-2">${cat}</h4>` + items.map(item => `<div class="bg-white p-3 rounded-xl border border-gray-100 flex justify-between items-center shadow-sm mb-2"><div><p class="font-bold text-sm text-gray-800 ${item.isSoldOut?'line-through text-red-500':''}">${item.name}</p><p class="text-xs text-green-600 font-black">${item.price.toFixed(2)} JOD</p></div> <div class="flex items-center gap-2"><button onclick="window.toggleMenuSoldOut('${item.id}', ${item.isSoldOut})" class="text-[10px] ${item.isSoldOut?'bg-green-100 text-green-700':'bg-red-100 text-red-700'} px-2 py-1 rounded font-bold">${item.isSoldOut?'إرجاع للبيع':'نفدت'}</button> <button onclick="window.deleteMenuItem('${item.id}')" class="text-gray-400 hover:text-red-500 p-2 rounded-lg"><i class="fa-solid fa-trash"></i></button></div></div>`).join('');
+                    }
+                    menuList.innerHTML = html;
+                }
+            }
+            let todaySales = 0; let totalOrders = 0; let monthSales = 0;
+            allOrders.filter(o => o.merchantId === currentUserData?.id && o.status === 'delivered').forEach(o => { todaySales += o.price; monthSales += o.price; totalOrders++; });
+            const sToday = document.getElementById('merch-sales-today'); if(sToday) sToday.innerText = `${todaySales.toFixed(2)} JOD`; 
+            const sMonth = document.getElementById('merch-sales-month'); if(sMonth) sMonth.innerText = `${monthSales.toFixed(2)} JOD`; 
+            const oCount = document.getElementById('merch-orders-count'); if(oCount) oCount.innerText = totalOrders;
+        };
+
+        window.renderCaptain = function() {
+            const list = document.getElementById('captain-orders-list'); const activeOrders = allOrders.filter(o => o.status === 'ready' || (o.status === 'on_the_way' && o.captainId === currentUserData?.id));
+            const bal = currentUserData?.walletBalance || 0;
+            if(list) {
+                if (activeOrders.length === 0) list.innerHTML = '<p class="text-center py-12 text-gray-400 text-sm">لا يوجد طلبات جاهزة حالياً</p>';
+                else {
+                    list.innerHTML = activeOrders.map(order => {
+                        const disableAccept = bal < MIN_WALLET_BALANCE && order.status === 'ready';
+                        return `
+                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+                            <div class="flex justify-between items-center mb-4"><span class="font-black text-gray-800 text-sm truncate">${(order.item || '').substring(0,30)}..</span><span class="text-[10px] bg-orange-100 text-orange-700 px-2 py-1 rounded-lg font-bold">أجرتك: ${order.deliveryFee.toFixed(2)} JOD</span></div>
+                            <div class="bg-gray-50 p-3 rounded-xl mb-4 space-y-2">
+                                <div class="flex justify-between items-center"><span class="text-xs font-bold text-gray-700"><i class="fa-solid fa-location-dot text-red-500"></i> ${order.customerLocation}</span>${order.status === 'on_the_way' ? `<button onclick="window.openChat('${order.id}', '${order.customerPhone}')" class="bg-blue-100 text-blue-700 px-2 py-1.5 rounded text-xs font-bold"><i class="fa-solid fa-comments"></i> شات</button>` : ''}</div>
+                                ${order.type === 'custom' ? `<span class="text-[10px] text-red-500 font-bold bg-red-50 px-2 py-1 rounded w-fit">طلب خارجي (حاسب عالفاتورة)</span>` : ''}
+                            </div>
+                            ${order.status === 'ready' ? `<button ${disableAccept ? 'disabled' : ''} onclick="window.updateOrderStatus('${order.id}', 'on_the_way')" class="w-full ${disableAccept ? 'bg-gray-300' : 'bg-blue-600 hover:bg-blue-700'} text-white py-3.5 rounded-xl text-sm font-bold shadow-md">استلام الطلب 💨</button>` : `<button onclick="window.finishDelivery('${order.id}', ${order.deliveryFee})" class="w-full bg-green-500 text-white py-3.5 rounded-xl text-sm font-bold shadow-md">تم التسليم ✅</button>`}
+                        </div>
+                    `}).join('');
+                }
+            }
+        };
+
+        window.renderAdmin = function() {
+            if(currentUserRole === 'support') {
+                const ft = document.getElementById('tab-admin-finance'); if(ft) ft.classList.add('hidden');
+                const dt = document.getElementById('admin-dash-content'); if(dt) dt.classList.add('hidden');
+            }
+            let totalSales = 0; allOrders.forEach(o => { if(o.status === 'delivered' && o.type !== 'custom') totalSales += (o.price + o.deliveryFee); });
+            const sTotal = document.getElementById('admin-total-sales'); if(sTotal) sTotal.innerText = totalSales.toFixed(2); 
+            const sProf = document.getElementById('admin-profits'); if(sProf) sProf.innerText = (totalSales * adminCommissionRate).toFixed(2);
+            const list = document.getElementById('admin-orders-list');
+            if(list) {
+                if (allOrders.length === 0) list.innerHTML = '<p class="text-center text-gray-400 py-8 text-sm">لا نشاط</p>';
+                else list.innerHTML = allOrders.slice(0,20).map(order => `<div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center mb-2"><div><p class="font-bold text-sm text-gray-800">${(order.item || '').substring(0,25)}..</p><p class="text-[10px] ${statusMap[order.status]?.color || 'bg-gray-100 text-gray-700'} px-2 py-0.5 rounded-full mt-1 font-bold inline-block">${statusMap[order.status]?.text || 'غير معروف'}</p></div><div class="text-left"><p class="font-black text-sm text-indigo-600">${order.type==='custom'?'فاتورة':(order.price+order.deliveryFee).toFixed(2)} JOD</p></div></div>`).join('');
+            }
+            
+            const capCount = document.getElementById('live-captains-count');
+            if(capCount) capCount.innerText = allStaff.filter(s => s.role === 'captain' && s.isOnline && !s.banned).length;
+            
+            const pStore = document.getElementById('new-promo-store');
+            if(pStore) {
+                let html = '<option value="all">صالح لجميع المتاجر</option>';
+                allStaff.filter(s=>s.role==='merchant').forEach(s => html += `<option value="${s.id}">${s.name}</option>`);
+                pStore.innerHTML = html;
+            }
+        };
+
+        window.renderAdminStaffList = function() {
+            const list = document.getElementById('admin-staff-list'); if(!list) return;
+            let html = '';
+            const roles = [ { id: 'admin', title: '🛡️ الإدارة' }, { id: 'support', title: '🎧 الدعم الفني' }, { id: 'merchant', title: '🏪 المتاجر الشريكة' }, { id: 'captain', title: '🛵 الكباتن' } ];
+            roles.forEach(r => {
+                const group = allStaff.filter(s => s.role === r.id);
+                if(group.length > 0) {
+                    html += `<h4 class="font-black text-indigo-900 text-xs mt-4 mb-2 bg-indigo-50 p-2 rounded">${r.title} (${group.length})</h4>`;
+                    html += group.map(member => `
+                        <div class="bg-white p-3 rounded-xl shadow-sm border ${member.banned ? 'border-red-300 bg-red-50' : 'border-gray-100'} flex justify-between items-center mb-2"> 
+                            <div> 
+                                <p class="font-bold text-sm ${member.banned ? 'text-red-700 line-through' : 'text-gray-800'}">${member.name}</p> 
+                                <p class="text-[10px] text-gray-500 font-bold">ID: <span class="text-indigo-600">${member.workNumber}</span> ${member.role==='captain'? `| محفظة: <span class="text-green-600">${(member.walletBalance||0).toFixed(2)}</span>` : ''}</p> 
+                            </div> 
+                            <div class="flex gap-1 flex-col items-end"> 
+                                ${member.role === 'captain' ? `<button onclick="window.openTopUpModal('${member.id}', ${member.walletBalance || 0})" class="bg-green-100 text-green-700 px-2 py-1 rounded text-[10px] font-bold w-full"><i class="fa-solid fa-plus"></i> رصيد</button>` : ''} 
+                                <div class="flex gap-1 mt-1">
+                                    <button onclick="window.openAdminEdit('staff', '${member.id}')" class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-[9px] font-bold"><i class="fa-solid fa-pen"></i></button> 
+                                    <button onclick="window.toggleBan('staff', '${member.id}', ${member.banned})" class="${member.banned ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'} px-2 py-1 rounded text-[9px] font-bold"><i class="fa-solid ${member.banned ? 'fa-unlock' : 'fa-ban'}"></i></button>
+                                    <button onclick="window.confirmDeleteUser('${member.id}', 'staff')" class="bg-red-100 text-red-700 px-2 py-1 rounded text-[9px] font-bold"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                            </div> 
+                        </div>`).join('');
+                }
+            });
+            if(allUsers.length > 0) {
+                html += `<h4 class="font-black text-indigo-900 text-xs mt-4 mb-2 bg-indigo-50 p-2 rounded">📱 الزبائن (${allUsers.length})</h4>`;
+                html += allUsers.map(u => `
+                    <div class="bg-white p-3 rounded-xl shadow-sm border ${u.banned ? 'border-red-300 bg-red-50' : 'border-gray-100'} flex justify-between items-center mb-2"> 
+                        <div> 
+                            <p class="font-bold text-sm ${u.banned ? 'text-red-700 line-through' : 'text-gray-800'}">${u.name}</p> 
+                            <p class="text-[10px] text-gray-500 font-bold">هاتف: ${u.phone} | نقاط: <span class="text-yellow-600">${u.loyaltyPoints||0}</span></p> 
+                        </div> 
+                        <div class="flex gap-1 flex-col items-end"> 
+                            <div class="flex gap-1 mt-1">
+                                <button onclick="window.openAdminEdit('users', '${u.id}')" class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-[10px] font-bold"><i class="fa-solid fa-pen"></i></button> 
+                                <button onclick="window.toggleBan('users', '${u.id}', ${u.banned})" class="${u.banned ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'} px-2 py-1 rounded text-[9px] font-bold"><i class="fa-solid ${u.banned ? 'fa-unlock' : 'fa-ban'}"></i></button>
+                                <button onclick="window.confirmDeleteUser('${u.id}', 'users')" class="bg-red-100 text-red-700 px-2 py-1 rounded text-[9px] font-bold"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </div> 
+                    </div>`).join('');
+            }
+            if(!html) html = '<p class="text-center text-gray-400 py-6 text-sm">لا يوجد مستخدمين</p>';
+            list.innerHTML = html;
+        };
+
+        window.renderAdminFinance = function() {
+            const list = document.getElementById('admin-points-requests'); if(!list) return;
+            const pending = allPointRequests.filter(r => r.status === 'pending');
+            if(pending.length === 0) { list.innerHTML = '<p class="text-xs text-gray-400 text-center py-4">لا توجد طلبات تحويل جديدة</p>'; return; }
+            list.innerHTML = pending.map(r => `<div class="bg-white p-3 rounded-xl border border-yellow-200 shadow-sm flex justify-between items-center mb-2"> <div><p class="font-bold text-sm text-gray-800">${r.customerName}</p><p class="text-xs text-gray-500">يطلب تحويل ${r.points} نقطة لـ ${r.money} دينار</p></div> <div class="flex gap-1"><button onclick="window.approvePointRequest('${r.id}', '${r.customerId}')" class="bg-green-100 text-green-700 px-3 py-1.5 rounded text-xs font-bold">موافقة</button><button onclick="window.rejectPointRequest('${r.id}')" class="bg-red-100 text-red-700 px-2 py-1.5 rounded text-xs font-bold"><i class="fa-solid fa-xmark"></i></button></div> </div>`).join('');
+        };
+
+        window.updateNotificationsUI = function() {
+            if(!currentUserData) return;
+            const myId = currentUserRole === 'customer' ? currentUserData.uid : currentUserData.id;
+            const myNotifs = allNotifications.filter(n => n.recipientId === myId || n.recipientId === 'all' || n.recipientId === `${currentUserRole}s`);
+            const unreadCount = myNotifs.filter(n => !n.read).length;
+            if(currentUserRole === 'customer') { const b = document.getElementById('cust-notif-badge'); if(b) b.classList.toggle('hidden', unreadCount === 0); }
+            if(currentUserRole === 'merchant') { const b = document.getElementById('merch-notif-badge'); if(b) b.classList.toggle('hidden', unreadCount === 0); }
+            if(currentUserRole === 'captain') { const b = document.getElementById('capt-notif-badge'); if(b) b.classList.toggle('hidden', unreadCount === 0); }
+            const list = document.getElementById('notifications-list'); if(!list) return;
+            if(myNotifs.length === 0) { list.innerHTML = '<p class="text-center text-xs text-gray-400 py-10">لا توجد إشعارات</p>'; return; }
+            list.innerHTML = myNotifs.map(n => `<div class="p-3 bg-white rounded-xl shadow-sm border ${n.read ? 'border-gray-100 opacity-70' : 'border-indigo-200 bg-indigo-50/30'}"> ${n.image ? `<img src="${n.image}" class="w-full h-24 object-cover rounded-lg mb-2">` : ''} <p class="text-sm font-bold text-gray-800">${n.message}</p></div>`).join('');
+        };
+
+        window.startFirestoreListeners = function() {
             unsubs.forEach(unsub => unsub()); unsubs = [];
             if(!currentUser) return;
-
-            unsubs.push(onSnapshot(getDocRef('settings', 'app_config'), (docSnap) => { if(docSnap.exists()) { appSettings = docSnap.data(); applyAppSettings(); }}));
+            unsubs.push(onSnapshot(getDocRef('settings', 'app_config'), (docSnap) => { if(docSnap.exists()) { appSettings = docSnap.data(); window.applyAppSettings(); }}));
             unsubs.push(onSnapshot(getCollection('orders'), (snapshot) => {
                 const newOrders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 newOrders.sort((a, b) => (b.timestamp?.toMillis() || 0) - (a.timestamp?.toMillis() || 0));
-                if(currentUserRole === 'customer') { const myActive = newOrders.filter(o => o.customerId === (currentUserData?.uid || 'demo_cust') && o.status !== 'delivered'); document.getElementById('cart-badge').classList.toggle('hidden', myActive.length === 0); }
-                if(currentChatOrderId) { const activeO = newOrders.find(o => o.id === currentChatOrderId); if(activeO) renderChatMessages(activeO.chat || []); }
-                allOrders = newOrders; updateUI();
+                if(currentUserRole === 'customer') { const myActive = newOrders.filter(o => o.customerId === (currentUserData?.uid || 'demo_cust') && o.status !== 'delivered'); const b = document.getElementById('cart-badge'); if(b) b.classList.toggle('hidden', myActive.length === 0); }
+                if(currentChatOrderId) { const activeO = newOrders.find(o => o.id === currentChatOrderId); if(activeO) window.renderChatMessages(activeO.chat || []); }
+                allOrders = newOrders; window.updateUI();
             }));
             unsubs.push(onSnapshot(getCollection('staff'), (snapshot) => {
                 allStaff = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                if (currentUserRole === 'captain' && currentUserData) { const me = allStaff.find(s => s.id === currentUserData.id); if(me) { currentUserData.walletBalance = me.walletBalance; updateCaptainWalletUI(); } }
-                if (currentUserRole === 'admin') { renderAdminStaffList(); updateAdminNotifDropdown(); }
+                if (currentUserRole === 'captain' && currentUserData) { const me = allStaff.find(s => s.id === currentUserData.id); if(me) { currentUserData.walletBalance = me.walletBalance; window.updateCaptainWalletUI(); } }
+                if (currentUserRole === 'admin') { window.renderAdminStaffList(); window.updateAdminNotifDropdown(); }
             }));
-            
             unsubs.push(onSnapshot(getCollection('users'), (snap) => { 
                 allUsers = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); 
                 if(currentUserRole === 'customer' && currentUserData) {
                     const me = allUsers.find(u => u.uid === currentUserData.uid);
                     if(me) { 
-                        currentUserData.loyaltyPoints = me.loyaltyPoints || 0; 
-                        currentUserData.walletBalance = me.walletBalance || 0;
-                        document.getElementById('prof-points').innerText = currentUserData.loyaltyPoints; 
-                        document.getElementById('cust-points-display').innerText = currentUserData.loyaltyPoints; 
-                        document.getElementById('prof-wallet').innerText = currentUserData.walletBalance.toFixed(2);
-                        const convertBtn = document.getElementById('convert-points-section');
-                        if(currentUserData.loyaltyPoints >= 1000) convertBtn.classList.remove('hidden'); else convertBtn.classList.add('hidden');
+                        currentUserData.loyaltyPoints = me.loyaltyPoints || 0; currentUserData.walletBalance = me.walletBalance || 0;
+                        const pEl = document.getElementById('prof-points'); if(pEl) pEl.innerText = currentUserData.loyaltyPoints; 
+                        const cEl = document.getElementById('cust-points-display'); if(cEl) cEl.innerText = currentUserData.loyaltyPoints; 
+                        const wEl = document.getElementById('prof-wallet'); if(wEl) wEl.innerText = currentUserData.walletBalance.toFixed(2);
+                        const convertBtn = document.getElementById('convert-points-section'); if(convertBtn) { if(currentUserData.loyaltyPoints >= 1000) convertBtn.classList.remove('hidden'); else convertBtn.classList.add('hidden'); }
                     }
                 }
-                if(currentUserRole === 'admin') updateAdminNotifDropdown();
+                if(currentUserRole === 'admin') window.updateAdminNotifDropdown();
             }));
-
             unsubs.push(onSnapshot(getCollection('point_requests'), (snap) => {
                 allPointRequests = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                if(currentUserRole === 'admin') {
-                    const pending = allPointRequests.filter(r => r.status === 'pending');
-                    document.getElementById('finance-badge').classList.toggle('hidden', pending.length === 0);
-                    renderAdminFinance();
-                }
+                if(currentUserRole === 'admin') { const pending = allPointRequests.filter(r => r.status === 'pending'); const fb = document.getElementById('finance-badge'); if(fb) fb.classList.toggle('hidden', pending.length === 0); window.renderAdminFinance(); }
             }));
-
-            unsubs.push(onSnapshot(getCollection('notifications'), (snap) => { allNotifications = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a, b) => (b.timestamp?.toMillis() || 0) - (a.timestamp?.toMillis() || 0)); updateNotificationsUI(); }));
-            unsubs.push(onSnapshot(getCollection('menu'), (snap) => { allMenu = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); updateUI(); }));
-            unsubs.push(onSnapshot(getCollection('promos'), (snap) => { allPromos = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); updateUI(); }));
-        }
-
-        function applyAppSettings() {
-            document.getElementById('app-name-display-1').innerText = appSettings.name || 'فزعــة';
-            document.getElementById('app-name-display-2').innerText = appSettings.name || 'فزعــة';
-            const logoContainer = document.getElementById('app-logo-container');
-            if(appSettings.logo && appSettings.logo.startsWith('http')) {
-                logoContainer.innerHTML = `<img src="${appSettings.logo}" class="w-full h-full object-cover">`; logoContainer.classList.remove('p-4');
-            } else { logoContainer.innerHTML = `<i class="fa-solid fa-rocket text-orange-500"></i>`; }
-        }
-
-        // --- Notifications ---
-        async function sendAppNotification(recipientId, message) { try { await addDoc(getCollection('notifications'), { recipientId, message, read: false, timestamp: serverTimestamp() }); } catch(e) {} }
-        function updateNotificationsUI() {
-            if(!currentUserData) return;
-            const myId = currentUserRole === 'customer' ? currentUserData.uid : currentUserData.id;
-            const myNotifs = allNotifications.filter(n => n.recipientId === myId || n.recipientId === 'all' || n.recipientId === `${currentUserRole}s`);
-            const unreadCount = myNotifs.filter(n => !n.read).length;
-            
-            if(currentUserRole === 'customer') document.getElementById('cust-notif-badge').classList.toggle('hidden', unreadCount === 0);
-            if(currentUserRole === 'merchant') document.getElementById('merch-notif-badge').classList.toggle('hidden', unreadCount === 0);
-            if(currentUserRole === 'captain') document.getElementById('capt-notif-badge').classList.toggle('hidden', unreadCount === 0);
-            
-            if(unreadCount > 0 && myNotifs[0] && myNotifs[0].timestamp) { const age = Date.now() - myNotifs[0].timestamp.toMillis(); if(age < 10000) showToast(`🔔 إشعار: ${myNotifs[0].message}`, 'info'); }
-
-            const list = document.getElementById('notifications-list');
-            if(myNotifs.length === 0) { list.innerHTML = '<p class="text-center text-xs text-gray-400 py-10">لا توجد إشعارات حالياً</p>'; return; }
-            list.innerHTML = myNotifs.map(n => `<div class="p-3 bg-white rounded-xl shadow-sm border ${n.read ? 'border-gray-100 opacity-70' : 'border-indigo-200 bg-indigo-50/30'}"><p class="text-sm font-bold text-gray-800">${n.message}</p></div>`).join('');
-        }
-        window.openNotificationsModal = () => { document.getElementById('notifications-modal').classList.remove('hidden'); };
-        window.closeNotificationsModal = () => { 
-            document.getElementById('notifications-modal').classList.add('hidden'); 
-            if(currentUserRole === 'customer') document.getElementById('cust-notif-badge').classList.add('hidden');
-            if(currentUserRole === 'merchant') document.getElementById('merch-notif-badge').classList.add('hidden');
-            if(currentUserRole === 'captain') document.getElementById('capt-notif-badge').classList.add('hidden');
+            unsubs.push(onSnapshot(getCollection('notifications'), (snap) => { allNotifications = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a, b) => (b.timestamp?.toMillis() || 0) - (a.timestamp?.toMillis() || 0)); window.updateNotificationsUI(); }));
+            unsubs.push(onSnapshot(getCollection('menu'), (snap) => { allMenu = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); window.updateUI(); }));
         };
 
-        // --- Auth ---
-        window.getLocation = () => {
-            const locInput = document.getElementById('reg-location'); locInput.value = "جاري البحث...";
-            if (navigator.geolocation) { navigator.geolocation.getCurrentPosition((pos) => { locInput.value = `${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`; showToast('تم التقاط الموقع', 'success'); }, (e) => { showToast('اسمح بالوصول', 'error'); }, { enableHighAccuracy: true });
-            } else { showToast('لا يدعم', 'error'); }
-        };
-        window.registerCustomer = async () => {
-            const name = document.getElementById('reg-name').value.trim(); const phone = document.getElementById('reg-phone').value.trim(); const loc = document.getElementById('reg-location').value.trim(); const pass = document.getElementById('reg-password').value;
-            if(!name || !phone || !loc || !pass) return showToast('أكمل الحقول', 'error');
-            const uid = "cust_" + Math.random().toString(36).substr(2, 9);
-            currentUserData = { uid: uid, name: name, phone: phone, location: loc, password: pass, role: 'customer', loyaltyPoints: 0, walletBalance: 0, banned: false };
-            await addDoc(getCollection('users'), currentUserData);
-            currentUserRole = 'customer'; setupCustomerProfile(); showView('customer'); showToast('تم التسجيل بنجاح', 'success'); sendAppNotification(uid, 'أهلاً بك في فزعة!');
-        };
-        window.loginCustomer = async () => {
-            const phone = document.getElementById('login-phone').value.trim(); const pass = document.getElementById('login-password').value;
-            if(!phone || !pass) return showToast('أدخل البيانات', 'error');
-            
-            const foundUser = allUsers.find(u => u.phone === phone && u.password === pass);
-            if (foundUser) {
-                if(foundUser.banned) return showToast('حساب محظور 🚫', 'error');
-                currentUserData = foundUser; currentUserRole = 'customer'; setupCustomerProfile(); showView('customer'); showToast('مرحباً بك!', 'success');
-            } else showToast('البيانات غير صحيحة', 'error');
-        };
-        function setupCustomerProfile() {
-            document.getElementById('cust-name-display').innerText = currentUserData.name; 
-            document.getElementById('cust-loc-display').innerText = currentUserData.location; 
-            document.getElementById('prof-name').innerText = currentUserData.name;
-            document.getElementById('prof-phone').innerText = currentUserData.phone;
-            document.getElementById('prof-loc').innerText = currentUserData.location;
-            document.getElementById('prof-points').innerText = currentUserData.loyaltyPoints || 0;
-            document.getElementById('cust-points-display').innerText = currentUserData.loyaltyPoints || 0;
-            document.getElementById('prof-wallet').innerText = (currentUserData.walletBalance || 0).toFixed(2);
-            const convertBtn = document.getElementById('convert-points-section');
-            if((currentUserData.loyaltyPoints || 0) >= 1000) convertBtn.classList.remove('hidden'); else convertBtn.classList.add('hidden');
-            switchCustTab('home'); updateNotificationsUI();
-        }
-        window.loginStaff = async () => {
-            const role = document.getElementById('login-staff-role').value; const workNum = document.getElementById('login-staff-worknum').value.trim().toUpperCase(); const pass = document.getElementById('login-staff-password').value;
-            
-            // مدير النظام الرئيسي
-            if (role === 'admin' && workNum === '2150502071' && pass === 'Moath1234') {
-                currentUserRole = 'admin'; currentUserData = { name: 'معاذ الخوالدة', role: 'admin' };
-                document.getElementById('admin-name-display').innerText = 'معاذ'; showView('admin'); return;
-            }
-            // فحص المدراء والكباتن والتجار من قاعدة البيانات
-            const foundStaff = allStaff.find(s => s.role === role && s.workNumber === workNum && s.password === pass);
-            if (foundStaff) {
-                if(foundStaff.banned) return showToast('الحساب محظور 🚫', 'error');
-                currentUserData = foundStaff; currentUserRole = role;
-                
-                if (role === 'admin') { document.getElementById('admin-name-display').innerText = currentUserData.name.split(' ')[0] || 'مدير'; showView('admin'); }
-                else if (role === 'merchant') { document.getElementById('merchant-name-display').innerText = currentUserData.name; showView('merchant'); } 
-                else if (role === 'captain') { 
-                    document.getElementById('captain-name-display').innerText = currentUserData.name; 
-                    const avg = currentUserData.ratingCount ? (currentUserData.ratingSum / currentUserData.ratingCount).toFixed(1) : '5.0';
-                    document.getElementById('captain-rating-display').innerText = avg;
-                    updateCaptainWalletUI(); showView('captain'); 
-                }
-                updateNotificationsUI();
-            } else { showToast('البيانات غير صحيحة', 'error'); }
-        };
-        
-        window.toggleMerchantCategory = () => {
-            const role = document.getElementById('new-staff-role').value;
-            const categoryContainer = document.getElementById('new-staff-category-container');
-            const workNumInput = document.getElementById('new-staff-worknum');
-            
-            if (categoryContainer) { categoryContainer.classList.toggle('hidden', role !== 'merchant'); }
-            if (workNumInput) { workNumInput.classList.toggle('hidden', role !== 'admin'); }
-        };
-
-        window.registerStaff = async () => {
-            if (currentUserRole !== 'admin') return;
-            const role = document.getElementById('new-staff-role').value; 
-            const cat = role === 'merchant' ? document.getElementById('new-staff-category').value : null;
-            const name = document.getElementById('new-staff-name').value.trim(); 
-            const phone = document.getElementById('new-staff-phone').value.trim(); 
-            const pass = document.getElementById('new-staff-password').value;
-            
-            const customWorkNum = document.getElementById('new-staff-worknum').value.trim();
-            const workNum = (role === 'admin' && customWorkNum) ? customWorkNum : `QE-${Math.floor(1000 + Math.random() * 9000)}`;
-
-            if(!name || !phone || !pass || (role === 'admin' && !customWorkNum)) return showToast('أكمل البيانات بالكامل', 'error');
-            
-            await addDoc(getCollection('staff'), { role, businessType: cat, name, workNumber: workNum, phone, password: pass, walletBalance: 0, banned: false, createdAt: serverTimestamp() });
-            showToast(`تم إضافة ${name}. رقمه: ${workNum}`, 'success');
-            document.getElementById('new-staff-name').value = ''; document.getElementById('new-staff-phone').value = ''; document.getElementById('new-staff-password').value = ''; document.getElementById('new-staff-worknum').value = '';
-        };
-        window.logout = () => { currentUserRole = ''; currentUserData = null; showView('login'); };
-
-        // --- Captain Wallet ---
-        function updateCaptainWalletUI() {
+        window.updateCaptainWalletUI = function() {
             if(currentUserRole !== 'captain' || !currentUserData) return;
-            const bal = currentUserData.walletBalance || 0; document.getElementById('captain-wallet-display').innerText = bal.toFixed(2);
+            const bal = currentUserData.walletBalance || 0; const disp = document.getElementById('captain-wallet-display'); if(disp) disp.innerText = bal.toFixed(2);
             const overlay = document.getElementById('captain-wallet-overlay'); const badge = document.getElementById('captain-status-badge');
-            if(bal < MIN_WALLET_BALANCE) { overlay.classList.remove('hidden'); badge.className = "bg-red-500/20 text-red-500 border border-red-500/50 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1"; badge.innerHTML = `<i class="fa-solid fa-lock"></i> موقوف`; } 
-            else { overlay.classList.add('hidden'); badge.className = "bg-green-500/20 text-green-400 border border-green-500/50 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1"; badge.innerHTML = `<div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div> متاح`; }
-            renderCaptain();
-        }
+            if(bal < MIN_WALLET_BALANCE) { if(overlay) overlay.classList.remove('hidden'); if(badge) { badge.className = "bg-red-500/20 text-red-500 border border-red-500/50 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1"; badge.innerHTML = `<i class="fa-solid fa-lock"></i> موقوف`; }
+            } else { if(overlay) overlay.classList.add('hidden'); if(badge) { badge.className = "bg-green-500/20 text-green-400 border border-green-500/50 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1"; badge.innerHTML = `<div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div> متاح`; } }
+            window.renderCaptain();
+        };
 
-        // --- Loyalty & Points ---
-        window.requestPointsConversion = async () => {
-            if((currentUserData.loyaltyPoints || 0) < 1000) return showToast('تحتاج 1000 نقطة كحد أدنى', 'error');
-            try { await addDoc(getCollection('point_requests'), { customerId: currentUserData.uid, customerName: currentUserData.name, points: 1000, money: 1.00, status: 'pending', timestamp: serverTimestamp() }); showToast('تم إرسال طلب التحويل للإدارة', 'success'); } catch(e) { showToast('خطأ في الإرسال', 'error'); }
-        };
-        window.approvePointRequest = async (reqId, custUid) => {
-            try {
-                const userQ = await getDocs(query(getCollection('users'), where('uid','==',custUid)));
-                if(!userQ.empty) {
-                    const uDoc = userQ.docs[0]; const ud = uDoc.data();
-                    if(ud.loyaltyPoints >= 1000) {
-                        await updateDoc(doc(db, 'users', uDoc.id), { loyaltyPoints: ud.loyaltyPoints - 1000, walletBalance: (ud.walletBalance || 0) + 1.00 });
-                        await updateDoc(doc(db, 'point_requests', reqId), { status: 'approved' });
-                        sendAppNotification(custUid, 'تم تحويل 1000 نقطة إلى 1 دينار في محفظتك 💰');
-                        showToast('تمت الموافقة وتم التحويل', 'success');
-                    } else showToast('نقاط الزبون غير كافية', 'error');
-                }
-            } catch(e) {}
-        };
-        window.rejectPointRequest = async (reqId) => { await updateDoc(doc(db, 'point_requests', reqId), { status: 'rejected' }); showToast('تم رفض الطلب', 'info'); };
-
-        // --- Checkout ---
-        window.openCustomOrderModal = () => { document.getElementById('custom-order-modal').classList.remove('hidden'); };
-        window.closeCustomOrderModal = () => { document.getElementById('custom-order-modal').classList.add('hidden'); };
-        window.confirmCustomOrder = async () => {
-            const place = document.getElementById('custom-place-name').value.trim(); const details = document.getElementById('custom-item-name').value.trim();
-            if(!place || !details) return showToast('أدخل تفاصيل الطلب والمكان', 'error');
-            await addDoc(getCollection('orders'), { type: 'custom', customerId: currentUserData.uid || 'demo_cust', customerName: currentUserData.name, customerPhone: currentUserData.phone || '0000', customerLocation: currentUserData.location || 'المفرق', item: `${details} (من: ${place})`, price: 0, deliveryFee: 1.50, status: 'ready', chat: [], timestamp: serverTimestamp() });
-            closeCustomOrderModal(); showToast('تم بث الطلب للكباتن 🚀', 'success'); switchCustTab('cart'); sendAppNotification('captains', 'طلب توصيل مخصص جديد بانتظار بطل!');
-        };
-        window.openCheckout = (itemName, price, mName, mId) => {
-            checkoutItem = { name: itemName, basePrice: price, mName: mName, mId: mId }; checkoutBasePrice = price; walletDiscountActive = false; appliedWalletDiscount = 0;
-            document.getElementById('checkout-item-name').innerText = `${itemName} (${mName})`; document.getElementById('checkout-item-price').innerText = `${price.toFixed(2)} JOD`;
-            const wallSec = document.getElementById('checkout-wallet-section'); const cb = document.getElementById('checkout-use-wallet'); const myBal = currentUserData?.walletBalance || 0;
-            if(myBal > 0) { wallSec.classList.remove('hidden'); document.getElementById('checkout-wallet-bal').innerText = myBal.toFixed(2); cb.checked = false; } else { wallSec.classList.add('hidden'); }
-            updateCheckoutTotal(); document.getElementById('checkout-modal').classList.remove('hidden');
-        };
-        window.closeCheckout = () => { document.getElementById('checkout-modal').classList.add('hidden'); };
-        window.toggleWalletDiscount = () => { walletDiscountActive = document.getElementById('checkout-use-wallet').checked; updateCheckoutTotal(); };
-        function updateCheckoutTotal() {
+        window.updateCheckoutTotal = function() {
             const totalCost = checkoutBasePrice + checkoutDelivery; const myBal = currentUserData?.walletBalance || 0;
-            if(walletDiscountActive) { appliedWalletDiscount = Math.min(totalCost, myBal); } else { appliedWalletDiscount = 0; }
-            const finalCash = totalCost - appliedWalletDiscount; document.getElementById('checkout-total-price').innerText = `${finalCash.toFixed(2)} JOD`;
-        }
-        window.confirmOrderPlacement = async () => {
-            const finalCash = (checkoutBasePrice + checkoutDelivery) - appliedWalletDiscount;
-            await addDoc(getCollection('orders'), { type: 'standard', merchantId: checkoutItem.mId, customerId: currentUserData.uid || 'demo_cust', customerName: currentUserData.name, customerPhone: currentUserData.phone || '0000', customerLocation: currentUserData.location || 'المفرق', item: `${checkoutItem.name} (${checkoutItem.mName})`, price: checkoutBasePrice, deliveryFee: checkoutDelivery, walletPaid: appliedWalletDiscount, cashToPay: finalCash, status: 'pending', chat: [], timestamp: serverTimestamp() });
-            if(appliedWalletDiscount > 0 && currentUserData.uid !== 'demo_cust') { const userQ = await getDocs(query(getCollection('users'), where('uid','==',currentUserData.uid))); if(!userQ.empty) updateDoc(doc(db, 'users', userQ.docs[0].id), { walletBalance: (currentUserData.walletBalance || 0) - appliedWalletDiscount }); }
-            closeCheckout(); showToast('تم إرسال الطلب بنجاح! 🎉', 'success'); switchCustTab('cart'); sendAppNotification(checkoutItem.mId, `طلب جديد من ${currentUserData.name}`);
+            if(walletDiscountActive) appliedWalletDiscount = Math.min(totalCost, myBal); else appliedWalletDiscount = 0;
+            const finalCash = totalCost - appliedWalletDiscount; const tEl = document.getElementById('checkout-total-price'); if(tEl) tEl.innerText = `${finalCash.toFixed(2)} JOD`;
         };
 
-        // --- Shared Update Status ---
-        window.updateOrderStatus = async (orderId, newStatus) => { 
-            const payload = { status: newStatus }; const order = allOrders.find(o => o.id === orderId);
-            if(newStatus === 'preparing' && order) sendAppNotification(order.customerId, 'المتجر بدأ بتجهيز طلبك 👨‍🍳');
-            if(newStatus === 'ready') sendAppNotification('captains', `طلب جاهز للتوصيل!`);
-            if(newStatus === 'on_the_way' && currentUserRole === 'captain') { payload.captainPhone = currentUserData.phone || '0000'; payload.captainId = currentUserData.id; if(order) { sendAppNotification(order.customerId, `الكابتن ${currentUserData.name} استلم الطلب وهو بالطريق! 🛵`); if(order.merchantId) sendAppNotification(order.merchantId, `تم استلام الطلب من الكابتن.`); } }
-            await updateDoc(doc(db, 'orders', orderId), payload); 
-        };
-        window.finishDelivery = async (orderId, fee) => {
-            const deduction = fee * DEDUCTION_RATE; const bal = currentUserData.walletBalance || 0;
-            if(bal < deduction) return showToast('رصيد المحفظة لا يكفي', 'error');
-            await updateOrderStatus(orderId, 'delivered'); await updateDoc(doc(db, 'staff', currentUserData.id), { walletBalance: bal - deduction });
-            showToast(`تم التسليم (خُصم ${deduction.toFixed(2)} JOD)`, 'success');
-            const order = allOrders.find(o => o.id === orderId);
-            if(order && order.customerId !== 'demo_cust') {
-                const points = 10; 
-                const userQ = await getDocs(query(getCollection('users'), where('uid','==',order.customerId)));
-                if(!userQ.empty) { const uDoc = userQ.docs[0]; updateDoc(doc(db, 'users', uDoc.id), { loyaltyPoints: (uDoc.data().loyaltyPoints || 0) + points }); sendAppNotification(order.customerId, `تم التوصيل بنجاح ✅ كسبت ${points} نقاط ولاء!`); }
+        window.applyAppSettings = function() {
+            const n1 = document.getElementById('app-name-display-1'); if(n1) n1.innerText = appSettings.name || 'فزعــة'; 
+            const n2 = document.getElementById('app-name-display-2'); if(n2) n2.innerText = appSettings.name || 'فزعــة';
+            const logoContainer = document.getElementById('app-logo-container');
+            if(logoContainer) { 
+                if(appSettings.logo) { 
+                    logoContainer.innerHTML = `<img src="${appSettings.logo}" class="w-full h-full object-cover">`; 
+                    logoContainer.classList.remove('p-4'); 
+                } else { 
+                    logoContainer.innerHTML = `<i class="fa-solid fa-rocket text-orange-500"></i>`; 
+                } 
             }
         };
 
-        // --- Chat ---
-        window.openChat = (orderId, otherPhone) => { currentChatOrderId = orderId; const order = allOrders.find(o => o.id === orderId); document.getElementById('chat-title').innerText = `محادثة #${order.id.substring(0,5)}`; document.getElementById('chat-call-btn').href = `tel:${otherPhone}`; document.getElementById('chat-modal').classList.remove('hidden'); renderChatMessages(order.chat || []); };
-        window.closeChat = () => { document.getElementById('chat-modal').classList.add('hidden'); currentChatOrderId = null; };
-        window.sendChatMessage = async () => { const input = document.getElementById('chat-input-text'); const text = input.value.trim(); if(!text || !currentChatOrderId) return; input.value = ''; await updateDoc(doc(db, 'orders', currentChatOrderId), { chat: arrayUnion({ sender: currentUserRole, text: text, time: new Date().toLocaleTimeString('ar-JO', {hour:'2-digit', minute:'2-digit'}) }) }); };
-        function renderChatMessages(msgs) { const container = document.getElementById('chat-messages'); if(msgs.length === 0) container.innerHTML = `<p class="text-center text-xs text-gray-400 mt-10">بداية المحادثة</p>`; else container.innerHTML = msgs.map(msg => `<div class="px-4 py-2 text-sm shadow-sm max-w-[80%] ${msg.sender === currentUserRole ? 'chat-me' : 'chat-other'} relative">${msg.text}<span class="block text-[8px] opacity-60 mt-1 text-right">${msg.time}</span></div>`).join(''); container.scrollTop = container.scrollHeight; }
-
-        // --- Rating System ---
-        window.openRatingModal = (orderId, captainId) => { ratingTargetOrderId = orderId; ratingTargetCaptainId = captainId; currentStarVal = 5; document.querySelectorAll('#rating-stars-container i').forEach(el => { el.classList.add('active'); el.style.color = '#fbbf24'; }); document.getElementById('rating-modal').classList.remove('hidden'); };
-        window.closeRatingModal = () => { document.getElementById('rating-modal').classList.add('hidden'); };
-        window.selectRating = (val) => { currentStarVal = val; document.querySelectorAll('#rating-stars-container i').forEach(el => { if(parseInt(el.dataset.val) <= val) { el.classList.add('active'); el.style.color = '#fbbf24'; } else { el.classList.remove('active'); el.style.color = '#d1d5db'; } }); };
-        window.submitRating = async () => {
-            if(!ratingTargetCaptainId) { closeRatingModal(); return; }
-            try {
-                const cRef = doc(db, 'staff', ratingTargetCaptainId); const cDoc = allStaff.find(s => s.id === ratingTargetCaptainId);
-                if(cDoc) { await updateDoc(cRef, { ratingSum: (cDoc.ratingSum || 0) + currentStarVal, ratingCount: (cDoc.ratingCount || 0) + 1 }); }
-                await updateDoc(doc(db, 'orders', ratingTargetOrderId), { rated: true });
-                showToast('شكراً لتقييمك! ⭐', 'success'); sendAppNotification(ratingTargetCaptainId, `حصلت على تقييم ${currentStarVal} نجوم لطلبك الأخير!`);
-            } catch(e) {}
-            closeRatingModal(); renderCustomer();
+        window.setupCustomerProfile = function() {
+            const n = document.getElementById('cust-name-display'); if(n) n.innerText = currentUserData.name; 
+            const l = document.getElementById('cust-loc-display'); if(l) l.innerText = currentUserData.location; 
+            const pn = document.getElementById('prof-name'); if(pn) pn.innerText = currentUserData.name;
+            const pp = document.getElementById('prof-phone'); if(pp) pp.innerText = currentUserData.phone;
+            const pl = document.getElementById('prof-loc'); if(pl) pl.innerText = currentUserData.location;
+            const pts = document.getElementById('prof-points'); if(pts) pts.innerText = currentUserData.loyaltyPoints || 0;
+            const cpts = document.getElementById('cust-points-display'); if(cpts) cpts.innerText = currentUserData.loyaltyPoints || 0;
+            const pw = document.getElementById('prof-wallet'); if(pw) pw.innerText = (currentUserData.walletBalance || 0).toFixed(2);
+            const convertBtn = document.getElementById('convert-points-section'); if(convertBtn) { if((currentUserData.loyaltyPoints || 0) >= 1000) convertBtn.classList.remove('hidden'); else convertBtn.classList.add('hidden'); }
+            window.switchCustTab('home'); window.updateNotificationsUI();
         };
 
-        // --- Merchant ---
-        window.previewImageName = (input) => { const p = document.getElementById('image-preview-name'); if(input.files && input.files[0]) { p.innerText = 'تم إرفاق: ' + input.files[0].name; p.classList.remove('hidden'); } else p.classList.add('hidden'); };
-        window.addMenuItem = async () => {
-            if (currentUserRole !== 'merchant') return;
-            const name = document.getElementById('new-item-name').value.trim(); const price = parseFloat(document.getElementById('new-item-price').value); const fileInput = document.getElementById('new-item-image');
-            if(!name || !price) return showToast('أدخل الاسم والسعر', 'error');
-            const btn = document.getElementById('btn-add-menu'); btn.innerHTML = '<div class="loader border-white"></div>';
-            let base64Image = null;
-            if(fileInput.files.length > 0) { const file = fileInput.files[0]; const reader = new FileReader(); reader.onload = async (e) => { base64Image = e.target.result; saveItemToDB(name, price, base64Image, btn); }; reader.readAsDataURL(file); } else { saveItemToDB(name, price, null, btn); }
-        };
-        async function saveItemToDB(name, price, imageStr, btn) { try { await addDoc(getCollection('menu'), { merchantId: currentUserData.id, merchantName: currentUserData.name, merchantType: currentUserData.businessType || 'restaurant', name: name, price: price, image: imageStr }); showToast('تمت الإضافة', 'success'); document.getElementById('new-item-name').value = ''; document.getElementById('new-item-price').value = ''; document.getElementById('new-item-image').value = ''; document.getElementById('image-preview-name').classList.add('hidden'); } catch(e) { showToast('خطأ', 'error'); } finally { btn.innerText = 'إضافة'; } }
-        window.deleteMenuItem = async (id) => { try { await deleteDoc(doc(db, 'menu', id)); } catch(e) {} };
+        window.showView = function(v) { document.querySelectorAll('div[id^="view-"]').forEach(el => { el.classList.add('hidden'); el.classList.remove('flex'); }); const e = document.getElementById(`view-${v}`); if(e) { e.classList.remove('hidden'); e.classList.add('flex'); } if(currentUserRole) window.updateUI(); };
+        window.switchLoginTab = function(t) { const isCust = t === 'customer'; const fc = document.getElementById('form-customer'); if(fc) fc.classList.toggle('hidden', !isCust); const fs = document.getElementById('form-staff'); if(fs) fs.classList.toggle('hidden', isCust); const tc = document.getElementById('tab-customer'); if(tc) tc.className = `flex-1 py-2 text-sm font-bold rounded-lg transition-all ${isCust ? 'bg-white shadow text-indigo-700' : 'text-gray-500'}`; const ts = document.getElementById('tab-staff'); if(ts) ts.className = `flex-1 py-2 text-sm font-bold rounded-lg transition-all ${!isCust ? 'bg-white shadow text-indigo-700' : 'text-gray-500'}`; };
+        window.switchCustTab = function(tab) { ['home', 'cart', 'profile'].forEach(t => { const e = document.getElementById(`cust-tab-${t}`); if(e) { e.classList.toggle('hidden', t !== tab); e.classList.toggle('block', t === tab); } const btn = document.getElementById(`nav-btn-${t}`); if(btn) { if(t === tab) { btn.classList.add('nav-active'); btn.classList.remove('text-gray-400'); } else { btn.classList.remove('nav-active'); btn.classList.add('text-gray-400'); } } }); const cb = document.getElementById('cart-badge'); if(tab === 'cart' && cb) cb.classList.add('hidden'); };
+        window.switchAdminTab = function(tab) { ['dash', 'staff', 'finance', 'notifs'].forEach(t => { const content = document.getElementById(`admin-${t}-content`); if(content) { content.classList.toggle('hidden', t !== tab); content.classList.toggle('block', t === tab); } const btn = document.getElementById(`tab-admin-${t}`); if(btn) { btn.className = `flex-1 min-w-[20%] py-2 text-[11px] font-bold rounded-lg transition-all ${t === tab ? 'bg-white shadow text-indigo-900' : 'text-indigo-600'}`; } }); const fb = document.getElementById('finance-badge'); if(tab === 'finance' && fb) fb.classList.add('hidden'); };
+        window.switchMerchantTab = function(tab) { ['orders', 'menu', 'dash'].forEach(t => { const e = document.getElementById(`merchant-${t}-content`); if(e) { e.classList.toggle('hidden', t !== tab); e.classList.toggle('block', t === tab); } const b = document.getElementById(`tab-merchant-${t}`); if(b) b.className = `flex-1 py-2 text-sm font-bold rounded-lg transition-all ${t === tab ? 'bg-white shadow text-pink-600' : 'text-gray-500'}`; }); };
 
-        // --- Admin ---
-        function updateAdminNotifDropdown() {
-            const select = document.getElementById('admin-notif-target'); if(!select) return;
-            let html = `<option value="all">الجميع (كباتن، متاجر، زبائن)</option><option value="captains">جميع الكباتن</option><option value="merchants">جميع المتاجر</option><option value="customers">جميع الزبائن</option><optgroup label="المستخدمين">`;
-            allUsers.forEach(u => html += `<option value="${u.uid}">زبون: ${u.name}</option>`); html += `</optgroup><optgroup label="الفريق">`;
-            allStaff.forEach(s => html += `<option value="${s.id}">${s.role === 'captain' ? 'كابتن': s.role === 'admin' ? 'مدير' : 'متجر'}: ${s.name}</option>`); html += `</optgroup>`;
-            select.innerHTML = html;
-        }
-        window.sendAdminNotification = async () => { if(currentUserRole !== 'admin') return; const target = document.getElementById('admin-notif-target').value; const msg = document.getElementById('admin-notif-msg').value.trim(); if(!msg) return showToast('اكتب الرسالة', 'error'); await sendAppNotification(target, `إعلان الإدارة: ${msg}`); showToast('تم بث الإشعار بنجاح', 'success'); document.getElementById('admin-notif-msg').value = ''; };
+        window.loginCustomer = async function() { const phone = document.getElementById('login-phone').value.trim(); const pass = document.getElementById('login-password').value; if(!phone || !pass) return window.showToast('أدخل البيانات', 'error'); const foundUser = allUsers.find(u => u.phone === phone && u.password === pass); if (foundUser) { if(foundUser.banned) return window.showToast('حساب محظور 🚫', 'error'); currentUserData = foundUser; currentUserRole = 'customer'; window.setupCustomerProfile(); window.showView('customer'); } else window.showToast('البيانات غير صحيحة', 'error'); };
+        window.loginStaff = async function() { const role = document.getElementById('login-staff-role').value; const workNum = document.getElementById('login-staff-worknum').value.trim().toUpperCase(); const pass = document.getElementById('login-staff-password').value; if (role === 'admin' && workNum === '2150502071' && pass === 'Moath1234') { currentUserRole = 'admin'; currentUserData = { name: 'معاذ الخوالدة', role: 'admin' }; const an = document.getElementById('admin-name-display'); if(an) an.innerText = 'معاذ'; window.showView('admin'); return; } const foundStaff = allStaff.find(s => s.role === role && s.workNumber === workNum && s.password === pass); if (foundStaff) { if(foundStaff.banned) return window.showToast('الحساب محظور 🚫', 'error'); currentUserData = foundStaff; currentUserRole = role; if (role === 'admin' || role === 'support') { const an = document.getElementById('admin-name-display'); if(an) an.innerText = currentUserData.name.split(' ')[0]; window.showView('admin'); } else if (role === 'merchant') { const mn = document.getElementById('merchant-name-display'); if(mn) mn.innerText = currentUserData.name; window.showView('merchant'); } else if (role === 'captain') { const cn = document.getElementById('captain-name-display'); if(cn) cn.innerText = currentUserData.name; const cr = document.getElementById('captain-rating-display'); if(cr) cr.innerText = currentUserData.ratingCount ? (currentUserData.ratingSum / currentUserData.ratingCount).toFixed(1) : '5.0'; window.updateCaptainWalletUI(); window.showView('captain'); } window.updateNotificationsUI(); } else { window.showToast('البيانات غير صحيحة', 'error'); } };
+        window.registerCustomer = async function() { const name = document.getElementById('reg-name').value.trim(); const phone = document.getElementById('reg-phone').value.trim(); const loc = document.getElementById('reg-location').value.trim(); const pass = document.getElementById('reg-password').value; if(!name || !phone || !loc || !pass) return window.showToast('أكمل الحقول', 'error'); const uid = "cust_" + Math.random().toString(36).substr(2, 9); currentUserData = { uid: uid, name: name, phone: phone, location: loc, password: pass, role: 'customer', loyaltyPoints: 0, walletBalance: 0, banned: false }; await addDoc(getCollection('users'), currentUserData); currentUserRole = 'customer'; window.setupCustomerProfile(); window.showView('customer'); window.showToast('تم التسجيل بنجاح', 'success'); window.sendAppNotification(uid, 'أهلاً بك في فزعة!'); };
+        window.registerStaff = async function() { if (currentUserRole !== 'admin') return; const role = document.getElementById('new-staff-role').value; const cat = role === 'merchant' ? document.getElementById('new-staff-category').value : null; const name = document.getElementById('new-staff-name').value.trim(); const phone = document.getElementById('new-staff-phone').value.trim(); const pass = document.getElementById('new-staff-password').value; const cWorkNum = document.getElementById('new-staff-worknum').value.trim(); const workNum = (role === 'admin' && cWorkNum) ? cWorkNum : `QE-${Math.floor(1000 + Math.random() * 9000)}`; if(!name || !phone || !pass || (role === 'admin' && !cWorkNum)) return window.showToast('أكمل البيانات بالكامل', 'error'); await addDoc(getCollection('staff'), { role, businessType: cat, name, workNumber: workNum, phone, password: pass, walletBalance: 0, isOnline: true, banned: false, createdAt: serverTimestamp() }); window.showToast(`تم إضافة ${name}. رقمه: ${workNum}`, 'success'); document.getElementById('new-staff-name').value = ''; document.getElementById('new-staff-phone').value = ''; document.getElementById('new-staff-password').value = ''; document.getElementById('new-staff-worknum').value = ''; };
+        window.logout = function() { currentUserRole = ''; currentUserData = null; customerCart = []; window.showView('login'); };
+        window.getLocation = function() { const locInput = document.getElementById('reg-location'); locInput.value = "جاري البحث..."; if (navigator.geolocation) { navigator.geolocation.getCurrentPosition((pos) => { locInput.value = `${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`; window.showToast('تم التقاط الموقع', 'success'); }, (e) => { window.showToast('اسمح بالوصول', 'error'); }, { enableHighAccuracy: true }); } else { window.showToast('لا يدعم', 'error'); } };
         
-        window.toggleBan = async (collectionName, docId, currentStatus) => { if(currentUserRole !== 'admin') return; try { await updateDoc(doc(db, collectionName, docId), { banned: !currentStatus }); showToast(!currentStatus ? 'تم حظر المستخدم 🚫' : 'تم فك الحظر ✅', 'success'); } catch(e) { showToast('خطأ في التعديل', 'error'); } };
-
-        // --- Views & UI Logic ---
-        window.setCustCategory = (cat) => { currentCustCategory = cat; document.querySelectorAll('.cat-btn').forEach(btn => { btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-md'); btn.classList.add('bg-white', 'text-gray-600'); }); document.getElementById(`btn-cat-${cat}`).classList.remove('bg-white', 'text-gray-600'); document.getElementById(`btn-cat-${cat}`).classList.add('bg-indigo-600', 'text-white', 'shadow-md'); renderCustomer(); };
-        window.switchCustTab = (tab) => { ['home', 'cart', 'profile'].forEach(t => { document.getElementById(`cust-tab-${t}`).classList.toggle('hidden', t !== tab); document.getElementById(`cust-tab-${t}`).classList.toggle('block', t === tab); const btn = document.getElementById(`nav-btn-${t}`); if(t === tab) { btn.classList.add('nav-active'); btn.classList.remove('text-gray-400'); } else { btn.classList.remove('nav-active'); btn.classList.add('text-gray-400'); } }); if(tab === 'cart') document.getElementById('cart-badge').classList.add('hidden'); };
-        window.switchAdminTab = (tab) => { ['dash', 'staff', 'finance', 'notifs'].forEach(t => { const content = document.getElementById(`admin-${t}-content`); if(content) { content.classList.toggle('hidden', t !== tab); content.classList.toggle('block', t === tab); } const btn = document.getElementById(`tab-admin-${t}`); if(btn) { btn.className = `flex-1 min-w-[20%] py-2 text-[11px] font-bold rounded-lg transition-all ${t === tab ? 'bg-white shadow text-indigo-900' : 'text-indigo-600'}`; } }); if(tab === 'finance') document.getElementById('finance-badge').classList.add('hidden'); };
-        window.switchMerchantTab = (tab) => { ['orders', 'menu'].forEach(t => { document.getElementById(`merchant-${t}-content`).classList.toggle('hidden', t !== tab); document.getElementById(`merchant-${t}-content`).classList.toggle('block', t === tab); document.getElementById(`tab-merchant-${t}`).className = `flex-1 py-2 text-sm font-bold rounded-lg transition-all ${t === tab ? 'bg-white shadow text-pink-600' : 'text-gray-500'}`; }); };
-        window.showView = (v) => { document.querySelectorAll('div[id^="view-"]').forEach(el => { el.classList.add('hidden'); el.classList.remove('flex'); }); document.getElementById(`view-${v}`).classList.remove('hidden'); document.getElementById(`view-${v}`).classList.add('flex'); if(currentUserRole) updateUI(); };
-        window.switchLoginTab = (t) => { const isCust = t === 'customer'; document.getElementById('form-customer').classList.toggle('hidden', !isCust); document.getElementById('form-staff').classList.toggle('hidden', isCust); document.getElementById('tab-customer').className = `flex-1 py-2 text-sm font-bold rounded-lg transition-all ${isCust ? 'bg-white shadow text-indigo-700' : 'text-gray-500'}`; document.getElementById('tab-staff').className = `flex-1 py-2 text-sm font-bold rounded-lg transition-all ${!isCust ? 'bg-white shadow text-indigo-700' : 'text-gray-500'}`; };
-        window.showToast = (msg, type = 'info') => { const toast = document.getElementById('toast'); document.getElementById('toast-msg').innerText = msg; const style = {'success':{bg:'bg-green-600', ic:'fa-check-circle'},'error':{bg:'bg-red-600', ic:'fa-triangle-exclamation'},'info':{bg:'bg-gray-900', ic:'fa-bell'}}; toast.className = `absolute top-6 left-1/2 transform -translate-x-1/2 ${style[type].bg} text-white px-5 py-3 rounded-2xl shadow-2xl transition-all duration-300 opacity-0 z-[100] flex items-center gap-3 text-sm font-bold min-w-[250px]`; document.getElementById('toast-icon').innerHTML = `<i class="fa-solid ${style[type].ic}"></i>`; toast.classList.remove('opacity-0', '-translate-y-4'); toast.classList.add('translate-y-0'); setTimeout(() => { toast.classList.add('opacity-0', '-translate-y-4'); toast.classList.remove('translate-y-0'); }, 3500); };
-
-        function updateUI() { if (currentUserRole === 'customer') renderCustomer(); if (currentUserRole === 'merchant') renderMerchant(); if (currentUserRole === 'captain') renderCaptain(); if (currentUserRole === 'admin') renderAdmin(); }
-
-        function renderCustomer() {
-            const menuList = document.getElementById('customer-menu-list'); const filteredMenu = currentCustCategory === 'all' ? allMenu : allMenu.filter(m => m.merchantType === currentCustCategory);
-            if(filteredMenu.length > 0) { 
-                menuList.innerHTML = filteredMenu.map(item => {
-                    const imgHTML = item.image ? `<img src="${item.image}" class="w-full h-16 object-cover rounded-xl mb-2">` : `<div class="w-full h-16 bg-gray-50 rounded-xl mb-2 flex items-center justify-center">${categoryIcons[item.merchantType] || categoryIcons['restaurant']}</div>`;
-                    return `<div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between"><div>${imgHTML}<span class="text-[9px] text-gray-500 font-bold bg-gray-100 px-2 py-0.5 rounded block mb-1 truncate">${item.merchantName || 'متجر'}</span><h4 class="font-bold text-gray-800 text-[13px] leading-snug">${item.name}</h4><p class="text-blue-600 font-black text-sm my-1">${item.price.toFixed(2)} JOD</p></div><button onclick="openCheckout('${item.name}', ${item.price}, '${item.merchantName}', '${item.merchantId}')" class="w-full bg-indigo-600 text-white text-[11px] font-bold py-2 mt-2 rounded-lg shadow-sm">إضافة للسلة</button></div>`;
-                }).join(''); 
-            } else { menuList.innerHTML = '<p class="col-span-2 text-center text-xs text-gray-400 py-4">لا يوجد عناصر حالياً</p>'; }
-
-            const list = document.getElementById('customer-orders-list'); const myOrders = allOrders.filter(o => o.customerId === (currentUserData?.uid || 'demo_cust'));
-            if (myOrders.length === 0) { list.innerHTML = `<div class="text-center py-10 opacity-50"><i class="fa-solid fa-basket-shopping text-5xl mb-3 text-gray-300"></i><p class="text-sm font-bold text-gray-400">سلتك فارغة</p></div>`; return; }
-            list.innerHTML = myOrders.map(order => `
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 relative">
-                    <div class="flex justify-between items-center mb-3"><span class="font-bold text-gray-800 text-sm">#${order.id.substring(0,5)}</span><span class="text-[10px] px-2 py-1 rounded-md font-bold ${statusMap[order.status]?.color || 'bg-gray-100 text-gray-700'}">${statusMap[order.status]?.text || 'غير معروف'}</span></div>
-                    <p class="text-xs font-bold text-gray-600 mb-3 bg-gray-50 p-2 rounded-lg">${order.item}</p>
-                    <div class="flex justify-between items-center border-t border-gray-100 pt-3">
-                        <span class="font-black text-blue-600 text-sm">${order.type === 'custom' ? 'الدفع عالفاتورة' : (order.cashToPay !== undefined ? order.cashToPay.toFixed(2) : (order.price + order.deliveryFee).toFixed(2)) + ' JOD نقداً'}</span>
-                        ${order.status === 'on_the_way' ? `<button onclick="openChat('${order.id}', '${order.captainPhone||'0000'}')" class="bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm hover:bg-blue-200"><i class="fa-solid fa-comments"></i> شات</button>` : ''}
-                        ${order.status === 'delivered' && !order.rated && order.captainId ? `<button onclick="openRatingModal('${order.id}', '${order.captainId}')" class="bg-yellow-400 text-yellow-900 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm"><i class="fa-solid fa-star"></i> تقييم الكابتن</button>` : ''}
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function renderMerchant() {
-            const list = document.getElementById('merchant-orders-list'); const activeOrders = allOrders.filter(o => (o.status === 'pending' || o.status === 'preparing') && o.merchantId === currentUserData?.id);
-            if (activeOrders.length === 0) list.innerHTML = '<p class="text-center py-12 text-gray-400 text-sm">لا يوجد طلبات جديدة</p>';
-            else {
-                list.innerHTML = activeOrders.map(order => `
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border-r-4 ${order.status === 'pending' ? 'border-pink-500' : 'border-orange-500'}">
-                        <div class="flex justify-between items-start mb-3"><div><span class="font-bold text-gray-800 text-sm block">${order.customerName}</span><span class="text-xs text-gray-500">${order.customerPhone}</span></div></div>
-                        <p class="text-sm font-black bg-pink-50 text-pink-900 p-3 rounded-xl mb-4 text-center">${order.item}</p>
-                        ${order.status === 'pending' ? `<button onclick="updateOrderStatus('${order.id}', 'preparing')" class="w-full bg-orange-500 text-white py-3 rounded-xl text-sm font-bold shadow-md">بدء التجهيز</button>` : `<button onclick="updateOrderStatus('${order.id}', 'ready')" class="w-full bg-green-500 text-white py-3 rounded-xl text-sm font-bold shadow-md">جاهز، استدعاء الكابتن</button>`}
-                    </div>
-                `).join('');
-            }
-            const menuList = document.getElementById('merchant-menu-list'); const myMenu = allMenu.filter(m => m.merchantId === currentUserData?.id);
-            if(myMenu.length === 0) menuList.innerHTML = '<p class="text-xs text-gray-400">القائمة فارغة</p>';
-            else menuList.innerHTML = myMenu.map(item => `<div class="bg-white p-3 rounded-xl border border-gray-100 flex justify-between items-center shadow-sm"><div><p class="font-bold text-sm text-gray-800">${item.name}</p><p class="text-xs text-green-600 font-black">${item.price.toFixed(2)} JOD</p></div><button onclick="deleteMenuItem('${item.id}')" class="text-red-500 p-2 hover:bg-red-50 rounded-lg"><i class="fa-solid fa-trash"></i></button></div>`).join('');
-        }
-
-        function renderCaptain() {
-            const list = document.getElementById('captain-orders-list'); const activeOrders = allOrders.filter(o => o.status === 'ready' || (o.status === 'on_the_way' && o.captainId === currentUserData?.id));
-            const bal = currentUserData?.walletBalance || 0;
-            if (activeOrders.length === 0) list.innerHTML = '<p class="text-center py-12 text-gray-400 text-sm">لا يوجد طلبات جاهزة حالياً</p>';
-            else {
-                list.innerHTML = activeOrders.map(order => {
-                    const disableAccept = bal < MIN_WALLET_BALANCE && order.status === 'ready';
-                    const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.customerLocation)}`;
-                    return `
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-                        <div class="flex justify-between items-center mb-4"><span class="font-black text-gray-800 text-sm truncate">${order.item.split('(')[0]}</span><span class="text-[10px] bg-orange-100 text-orange-700 px-2 py-1 rounded-lg font-bold">أجرتك: ${order.deliveryFee.toFixed(2)} JOD</span></div>
-                        <div class="bg-gray-50 p-3 rounded-xl mb-4 space-y-2">
-                            <div class="flex justify-between items-center"><span class="text-xs font-bold text-gray-700">${order.customerLocation}</span>${order.status === 'on_the_way' ? `<button onclick="openChat('${order.id}', '${order.customerPhone}')" class="bg-blue-100 text-blue-700 px-2 py-1.5 rounded text-xs font-bold"><i class="fa-solid fa-comments"></i> شات</button>` : ''}</div>
-                            ${order.type === 'custom' ? `<span class="text-[10px] text-red-500 font-bold bg-red-50 px-2 py-1 rounded w-fit">طلب خارجي (حاسب عالفاتورة)</span>` : ''}
-                        </div>
-                        ${order.status === 'ready' ? `<button ${disableAccept ? 'disabled' : ''} onclick="updateOrderStatus('${order.id}', 'on_the_way')" class="w-full ${disableAccept ? 'bg-gray-300' : 'bg-blue-600 hover:bg-blue-700'} text-white py-3.5 rounded-xl text-sm font-bold shadow-md">استلام الطلب 💨</button>` : `<button onclick="finishDelivery('${order.id}', ${order.deliveryFee})" class="w-full bg-green-500 text-white py-3.5 rounded-xl text-sm font-bold shadow-md">تم التسليم ✅</button>`}
-                    </div>
-                `}).join('');
-            }
-        }
-
-        function renderAdmin() {
-            let totalSales = 0; allOrders.forEach(o => { if(o.status === 'delivered' && o.type !== 'custom') totalSales += (o.price + o.deliveryFee); });
-            document.getElementById('admin-total-sales').innerText = totalSales.toFixed(2); document.getElementById('admin-profits').innerText = (totalSales * adminCommissionRate).toFixed(2);
-            const list = document.getElementById('admin-orders-list');
-            if (allOrders.length === 0) list.innerHTML = '<p class="text-center text-gray-400 py-8 text-sm">لا نشاط</p>';
-            else list.innerHTML = allOrders.map(order => `<div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center"><div><p class="font-bold text-sm text-gray-800">${order.item}</p><p class="text-[10px] ${statusMap[order.status]?.color || 'bg-gray-100 text-gray-700'} px-2 py-0.5 rounded-full mt-1 font-bold inline-block">${statusMap[order.status]?.text || 'غير معروف'}</p></div><div class="text-left"><p class="font-black text-sm text-indigo-600">${order.type==='custom'?'فاتورة':(order.price+order.deliveryFee).toFixed(2)}</p></div></div>`).join('');
-        }
-
-        function renderAdminStaffList() {
-            const list = document.getElementById('admin-staff-list');
-            if (allStaff.length === 0) { list.innerHTML = '<p class="text-center text-gray-400 py-6 text-sm">لا أعضاء</p>'; return; }
-            list.innerHTML = allStaff.map(member => {
-                const avgRating = member.ratingCount ? (member.ratingSum / member.ratingCount).toFixed(1) : '-';
-                return `
-                <div class="bg-white p-3 rounded-xl shadow-sm border ${member.banned ? 'border-red-300' : 'border-gray-100'} flex justify-between items-center">
-                    <div>
-                        <p class="font-bold text-sm ${member.banned ? 'text-red-700 line-through' : 'text-gray-800'}">${member.name} <span class="text-[9px] bg-gray-100 text-gray-500 px-1 rounded">${member.role === 'admin' ? 'مدير' : member.role === 'captain' ? 'كابتن' : 'متجر'}</span></p>
-                        <p class="text-[10px] text-gray-500">ID: ${member.workNumber} ${member.role==='captain'? `| محفظة: <span class="text-green-600 font-bold">${(member.walletBalance||0).toFixed(2)}</span> | ⭐ ${avgRating}` : ''}</p>
-                    </div>
-                    <div class="flex gap-1 flex-col items-end">
-                        ${member.role === 'captain' ? `<button onclick="openTopUpModal('${member.id}', ${member.walletBalance || 0})" class="bg-green-100 text-green-700 px-2 py-1 rounded text-[10px] font-bold"><i class="fa-solid fa-plus"></i> شحن</button>` : ''}
-                        <button onclick="toggleBan('staff', '${member.id}', ${member.banned})" class="text-[9px] ${member.banned ? 'text-green-600' : 'text-red-500'} font-bold">${member.banned ? 'فك الحظر' : 'حظر 🚫'}</button>
-                    </div>
-                </div>
-            `}).join('');
-        }
+        window.confirmOrderPlacement = async function() { const finalCash = (checkoutBasePrice + checkoutDelivery) - appliedWalletDiscount; const timePref = document.getElementById('checkout-time')?.value || 'now'; const notes = document.getElementById('checkout-notes')?.value.trim() || ''; await addDoc(getCollection('orders'), { type: 'standard', merchantId: checkoutItem.mId, customerId: currentUserData.uid || 'demo_cust', customerName: currentUserData.name, customerPhone: currentUserData.phone || '0000', customerLocation: currentUserData.location || 'المفرق', item: checkoutItem.name, price: checkoutBasePrice, deliveryFee: checkoutDelivery, walletPaid: appliedWalletDiscount, cashToPay: finalCash, status: 'pending', chat: [], scheduledTime: timePref, notes: notes, rated: false, timestamp: serverTimestamp() }); if(appliedWalletDiscount > 0 && currentUserData.uid !== 'demo_cust') { const userQ = await getDocs(query(getCollection('users'), where('uid','==',currentUserData.uid))); if(!userQ.empty) updateDoc(doc(db, 'users', userQ.docs[0].id), { walletBalance: (currentUserData.walletBalance || 0) - appliedWalletDiscount }); } customerCart = []; window.renderCartView(); window.closeCheckout(); window.showToast('تم إرسال الطلب بنجاح! 🎉', 'success'); window.switchCustTab('cart'); window.sendAppNotification(checkoutItem.mId, `طلب جديد!`); };
+        window.updateOrderStatus = async function(orderId, newStatus) { const payload = { status: newStatus }; const order = allOrders.find(o => o.id === orderId); if(newStatus === 'preparing' && order) window.sendAppNotification(order.customerId, 'المتجر بدأ بتجهيز طلبك 👨‍🍳'); if(newStatus === 'ready') window.sendAppNotification('captains', `طلب جاهز للتوصيل!`); if(newStatus === 'on_the_way' && currentUserRole === 'captain') { payload.captainPhone = currentUserData.phone || '0000'; payload.captainId = currentUserData.id; if(order) { window.sendAppNotification(order.customerId, `الكابتن ${currentUserData.name} استلم الطلب وهو بالطريق! 🛵`); if(order.merchantId) window.sendAppNotification(order.merchantId, `تم استلام الطلب من الكابتن.`); } } await updateDoc(doc(db, 'orders', orderId), payload); };
+        window.finishDelivery = async function(orderId, fee) { const deduction = fee * DEDUCTION_RATE; const bal = currentUserData.walletBalance || 0; if(bal < deduction) return window.showToast('رصيد المحفظة لا يكفي', 'error'); await window.updateOrderStatus(orderId, 'delivered'); await updateDoc(doc(db, 'staff', currentUserData.id), { walletBalance: bal - deduction }); window.showToast(`تم التسليم (خُصم ${deduction.toFixed(2)} JOD)`, 'success'); const order = allOrders.find(o => o.id === orderId); if(order && order.customerId !== 'demo_cust') { const points = 10; const userQ = await getDocs(query(getCollection('users'), where('uid','==',order.customerId))); if(!userQ.empty) { const uDoc = userQ.docs[0]; updateDoc(doc(db, 'users', uDoc.id), { loyaltyPoints: (uDoc.data().loyaltyPoints || 0) + points }); window.sendAppNotification(order.customerId, `تم التوصيل بنجاح ✅ كسبت ${points} نقاط ولاء!`); } } };
+        window.sendChatMessage = async function() { const input = document.getElementById('chat-input-text'); const text = input.value.trim(); if(!text || !currentChatOrderId) return; input.value = ''; await updateDoc(doc(db, 'orders', currentChatOrderId), { chat: arrayUnion({ sender: currentUserRole, text: text, time: new Date().toLocaleTimeString('ar-JO', {hour:'2-digit', minute:'2-digit'}) }) }); };
         
-        function renderAdminFinance() {
-            const list = document.getElementById('admin-points-requests');
-            const pending = allPointRequests.filter(r => r.status === 'pending');
-            if(pending.length === 0) { list.innerHTML = '<p class="text-xs text-gray-400 text-center py-4">لا توجد طلبات تحويل جديدة</p>'; return; }
-            list.innerHTML = pending.map(r => `
-                <div class="bg-white p-3 rounded-xl border border-yellow-200 shadow-sm flex justify-between items-center">
-                    <div><p class="font-bold text-sm text-gray-800">${r.customerName}</p><p class="text-xs text-gray-500">يطلب تحويل ${r.points} نقطة لـ ${r.money} دينار</p></div>
-                    <div class="flex gap-1"><button onclick="approvePointRequest('${r.id}', '${r.customerId}')" class="bg-green-100 text-green-700 px-3 py-1.5 rounded text-xs font-bold">موافقة</button><button onclick="rejectPointRequest('${r.id}')" class="bg-red-100 text-red-700 px-2 py-1.5 rounded text-xs font-bold"><i class="fa-solid fa-xmark"></i></button></div>
-                </div>
-            `).join('');
-        }
+        // --- Admin Specific Methods ---
+        window.confirmDeleteUser = function(docId, colName) { targetDeleteId = docId; targetDeleteCol = colName; document.getElementById('delete-confirm-modal').classList.remove('hidden'); };
+        window.executeDeleteUser = async function() { if(!targetDeleteId || !targetDeleteCol) return; try { await deleteDoc(doc(db, targetDeleteCol, targetDeleteId)); window.showToast('تم الحذف بنجاح 🗑️', 'success'); } catch(e) { window.showToast('خطأ في الحذف', 'error'); } document.getElementById('delete-confirm-modal').classList.add('hidden'); targetDeleteId = null; targetDeleteCol = null; };
+
+        // --- Execute Init ---
+        const initSystem = async () => {
+            try { await signInAnonymously(auth); } catch(e) { console.error("Network Error"); }
+            onAuthStateChanged(auth, (user) => { 
+                if (user) { currentUser = user; window.startFirestoreListeners(); } 
+                setTimeout(() => { const loader = document.getElementById('initial-loader'); if(loader) { loader.classList.add('opacity-0'); setTimeout(() => loader.classList.add('hidden'), 500); } }, 500);
+            });
+        };
+        initSystem();
 
     </script>
 </body>
