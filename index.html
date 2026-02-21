@@ -47,7 +47,7 @@
             <div class="absolute inset-0 border-4 border-indigo-200 border-t-orange-500 rounded-full animate-spin"></div>
         </div>
         <h1 class="text-2xl font-black text-white mb-2 tracking-wide">فزعــة</h1>
-        <p class="text-indigo-200 text-sm font-medium">جاري تهيئة النظام...</p>
+        <p class="text-indigo-200 text-sm font-medium" id="loader-text">جاري تهيئة النظام...</p>
     </div>
 
     <div class="w-full max-w-md h-full bg-gray-50 flex flex-col relative shadow-2xl overflow-hidden border-x border-gray-200">
@@ -59,7 +59,7 @@
         </div>
 
         <!-- ==================== Login ==================== -->
-        <div id="view-login" class="flex flex-col h-full bg-white relative overflow-y-auto hide-scrollbar">
+        <div id="view-login" class="flex flex-col h-full bg-white relative overflow-y-auto hide-scrollbar hidden">
             <div class="absolute top-0 w-full h-1/2 bg-gradient-to-br from-indigo-900 to-blue-800 rounded-b-[4rem] shadow-inner"></div>
             
             <div class="flex-1 flex flex-col items-center pt-16 px-8 relative z-10">
@@ -146,7 +146,7 @@
                     <div class="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl p-4 text-white shadow-lg relative overflow-hidden mb-2">
                         <div class="absolute -left-4 -top-4 text-white/10 text-6xl"><i class="fa-solid fa-brain"></i></div>
                         <h3 class="font-black text-lg mb-2 relative z-10">✨ محتار شو تطلب؟</h3>
-                        <p class="text-xs text-purple-100 mb-3 relative z-10">اسأل المساعد الذكي (Gemini) ليقترح لك وجبة!</p>
+                        <p class="text-xs text-purple-100 mb-3 relative z-10">اسأل المساعد الذكي ليقترح لك وجبة!</p>
                         <div class="flex gap-2 relative z-10">
                             <input type="text" id="ai-food-query" class="flex-1 px-3 py-2 rounded-xl text-gray-800 text-sm outline-none" placeholder="مثال: عبالي إشي دسم ورخيص...">
                             <button onclick="window.askAIFood()" id="ai-food-btn" class="bg-white text-purple-600 px-4 py-2 rounded-xl text-sm font-bold shadow hover:bg-gray-50 transition-colors">اسأل</button>
@@ -176,7 +176,10 @@
                     <!-- الأكثر مبيعاً (Best Sellers) -->
                     <div id="best-sellers-container" class="mb-6">
                         <h3 class="font-black text-gray-800 text-sm mb-3"><i class="fa-solid fa-fire text-orange-500"></i> الأكثر مبيعاً اليوم 🔥</h3>
-                        <div class="flex gap-3 overflow-x-auto hide-scrollbar pb-2" id="best-sellers-list"></div>
+                        <div class="flex gap-3 overflow-x-auto hide-scrollbar pb-2" id="best-sellers-list">
+                            <!-- سيتم حقنه تلقائياً من المبيعات إذا توفرت بيانات -->
+                            <p class="text-xs text-gray-400 w-full text-center">ترقبوا أفضل المنتجات</p>
+                        </div>
                     </div>
 
                     <div id="cust-stores-view" class="block">
@@ -391,6 +394,7 @@
                     <button id="tab-admin-dash" onclick="window.switchAdminTab('dash')" class="flex-1 min-w-[20%] py-2 text-[10px] font-bold bg-white shadow rounded-lg text-indigo-900 transition-all">الرئيسية</button>
                     <button id="tab-admin-staff" onclick="window.switchAdminTab('staff')" class="flex-1 min-w-[20%] py-2 text-[10px] font-bold text-indigo-600 rounded-lg transition-all">المستخدمين والتعديل</button>
                     <button id="tab-admin-finance" onclick="window.switchAdminTab('finance')" class="flex-1 min-w-[20%] py-2 text-[10px] font-bold text-indigo-600 rounded-lg transition-all relative">المالية <span id="finance-badge" class="hidden absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span></button>
+                    <button id="tab-admin-settings" onclick="window.switchAdminTab('settings')" class="flex-1 min-w-[20%] py-2 text-[10px] font-bold text-indigo-600 rounded-lg transition-all">إعدادات / إشعارات</button>
                 </div>
 
                 <div id="admin-dash-content" class="block space-y-4">
@@ -402,11 +406,22 @@
                         <button onclick="window.exportCSV()" class="flex-1 bg-green-600 text-white font-bold py-2 rounded-xl text-xs shadow-sm"><i class="fa-solid fa-file-csv mr-1"></i> تصدير الطلبات CSV</button>
                     </div>
                     
+                    <!-- خريطة الكباتن الوهمية -->
+                    <div class="bg-indigo-50 rounded-2xl p-4 border border-indigo-100 mt-4 relative overflow-hidden h-40 flex items-center justify-center">
+                        <i class="fa-solid fa-map-location-dot text-indigo-200 text-6xl absolute z-0"></i>
+                        <div class="relative z-10 text-center">
+                            <p class="font-bold text-indigo-800 text-sm mb-2"><i class="fa-solid fa-satellite-dish"></i> خريطة الكباتن الحية</p>
+                            <p class="text-xs text-indigo-600">يتوفر <span id="live-captains-count" class="font-black">0</span> كابتن في الخدمة الآن.</p>
+                        </div>
+                        <div class="absolute w-2 h-2 bg-green-500 rounded-full animate-ping top-10 left-10"></div>
+                        <div class="absolute w-2 h-2 bg-green-500 rounded-full animate-ping bottom-10 right-20"></div>
+                    </div>
+                    
                     <h3 class="font-bold text-gray-800 border-b pb-2 mt-4"><i class="fa-solid fa-satellite-dish text-indigo-500"></i> الرادار المباشر</h3>
                     <div id="admin-orders-list" class="space-y-3"></div>
                 </div>
 
-                <!-- إدارة المستخدمين والتعديل الكامل -->
+                <!-- إدارة المستخدمين -->
                 <div id="admin-staff-content" class="hidden space-y-5">
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-3">
                         <h3 class="font-bold text-gray-800 text-sm border-b pb-3"><i class="fa-solid fa-user-plus text-indigo-500"></i> إضافة عضو للنظام</h3>
@@ -414,22 +429,26 @@
                             <option value="merchant">متجر 🏪</option>
                             <option value="captain">كابتن توصيل 🛵</option>
                             <option value="admin">مدير نظام 🛡️</option>
+                            <option value="support">دعم فني (بدون مالية) 🎧</option>
                         </select>
                         <div id="new-staff-category-container">
                             <select id="new-staff-category" class="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 outline-none bg-gray-50">
                                 <option value="restaurant">مطعم 🍔</option>
                                 <option value="market">ماركت 🛒</option>
                                 <option value="pharmacy">صيدلية 💊</option>
+                                <option value="school">مدارس وجامعات 🎓</option>
+                                <option value="productive">أسر منتجة 🏡</option>
+                                <option value="gas">غاز 🔥</option>
                             </select>
                         </div>
-                        <input type="text" id="new-staff-name" class="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 outline-none" placeholder="الاسم (للمدير أو المتجر)">
+                        <input type="text" id="new-staff-name" class="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 outline-none" placeholder="الاسم الكامل / المتجر">
                         <input type="text" id="new-staff-worknum" class="hidden w-full px-3 py-2 text-sm rounded-xl border border-indigo-200 outline-none bg-indigo-50" placeholder="المعرف المخصص (اختياري للإدارة)">
                         <input type="tel" id="new-staff-phone" class="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 outline-none" placeholder="رقم الهاتف">
                         <input type="password" id="new-staff-password" class="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 outline-none" placeholder="كلمة المرور">
                         <button onclick="window.registerStaff()" class="w-full bg-indigo-600 text-white font-bold py-2.5 rounded-xl mt-2 text-sm">إضافة واعتماد</button>
+                        <button onclick="window.seedDummyData()" class="w-full bg-gray-100 text-gray-600 font-bold py-2 rounded-xl mt-1 text-xs"><i class="fa-solid fa-flask"></i> إنشاء بيانات تجريبية</button>
                     </div>
                     
-                    <!-- فرز المستخدمين -->
                     <h3 class="font-bold text-gray-800 text-sm">إدارة مستخدمي النظام</h3>
                     <div id="admin-staff-list" class="space-y-4"></div>
                 </div>
@@ -437,12 +456,44 @@
                 <div id="admin-finance-content" class="hidden space-y-4">
                     <h3 class="font-bold text-gray-800 border-b pb-2 text-sm"><i class="fa-solid fa-money-bill-transfer text-indigo-500"></i> طلبات تحويل النقاط (الزبائن)</h3>
                     <div id="admin-points-requests" class="space-y-3 mb-6"></div>
-                    
-                    <h3 class="font-bold text-gray-800 border-b pb-2 text-sm mt-6"><i class="fa-solid fa-paper-plane text-indigo-500"></i> إرسال إشعارات</h3>
+                </div>
+
+                <div id="admin-settings-content" class="hidden space-y-5">
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-3">
-                        <select id="admin-notif-target" class="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 outline-none"><option value="all">الجميع</option><option value="captains">الكباتن</option><option value="merchants">المتاجر</option><option value="customers">الزبائن</option></select>
-                        <textarea id="admin-notif-msg" rows="3" class="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 outline-none" placeholder="اكتب إشعارك..."></textarea>
-                        <button onclick="window.sendAdminNotification()" class="w-full bg-blue-600 text-white font-bold py-2.5 rounded-xl shadow-md text-sm mt-2">إرسال الإشعار <i class="fa-solid fa-bolt ml-1"></i></button>
+                        <h3 class="font-bold text-gray-800 text-sm border-b pb-3"><i class="fa-solid fa-sliders text-indigo-500"></i> هوية التطبيق (تغيير اللوجو)</h3>
+                        <input type="text" id="setting-app-name" class="w-full px-3 py-2.5 text-sm rounded-xl border border-gray-200 outline-none" placeholder="اسم التطبيق">
+                        <div class="flex items-center gap-2">
+                            <div class="file-upload-btn w-12 h-12 bg-gray-100 text-gray-500 rounded-xl flex items-center justify-center border border-dashed border-gray-300 hover:bg-gray-200 shrink-0">
+                                <i class="fa-solid fa-image"></i>
+                                <input type="file" id="setting-app-logo-file" accept="image/*" onchange="window.previewLogoName(this)">
+                            </div>
+                            <div class="text-xs text-gray-500" id="logo-preview-text">اختر شعار التطبيق (صورة)</div>
+                        </div>
+                        <button onclick="window.saveAppSettings()" class="w-full bg-gray-900 text-white font-bold py-2.5 rounded-xl shadow-md text-sm mt-2">حفظ الهوية الجديدة</button>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-3">
+                        <h3 class="font-bold text-gray-800 text-sm border-b pb-3"><i class="fa-solid fa-paper-plane text-indigo-500"></i> مركز بث الإشعارات والصور</h3>
+                        <div>
+                            <select id="admin-notif-target" class="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 outline-none">
+                                <option value="all">الجميع (كباتن، متاجر، زبائن)</option>
+                                <option value="captains">جميع الكباتن</option>
+                                <option value="merchants">جميع المتاجر</option>
+                                <option value="customers">جميع الزبائن</option>
+                            </select>
+                        </div>
+                        <input type="text" id="admin-notif-img" class="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 outline-none" placeholder="رابط صورة بانر إعلاني (اختياري URL)">
+                        <textarea id="admin-notif-msg" rows="3" class="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 outline-none" placeholder="اكتب إشعارك (عرض جديد، تحذير...)"></textarea>
+                        
+                        <div class="border-t pt-3 mt-2">
+                            <h4 class="text-[10px] font-bold text-gray-500 mb-2">إصدار كوبون خصم مخصص</h4>
+                            <div class="grid grid-cols-2 gap-2">
+                                <input type="text" id="new-promo-code" class="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 outline-none uppercase font-bold" placeholder="كود الخصم">
+                                <input type="number" id="new-promo-discount" class="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 outline-none" placeholder="الخصم JOD">
+                            </div>
+                            <button onclick="window.addPromo()" class="w-full bg-green-600 text-white font-bold py-2 rounded-xl shadow-md text-xs mt-2">إصدار الكوبون</button>
+                        </div>
+                        <button onclick="window.sendAdminNotification()" class="w-full bg-blue-600 text-white font-bold py-2.5 rounded-xl shadow-md text-sm mt-4">إرسال الإشعار فوراً <i class="fa-solid fa-bolt ml-1"></i></button>
                     </div>
                 </div>
 
@@ -450,8 +501,32 @@
         </div>
 
         <!-- ==================== نوافذ منبثقة (Modals) ==================== -->
+        
+        <!-- Custom Order Modal -->
+        <div id="custom-order-modal" class="hidden absolute inset-0 bg-gray-900/80 z-[80] flex items-center justify-center backdrop-blur-sm p-4 transition-all">
+            <div class="bg-white w-full rounded-3xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto hide-scrollbar">
+                <button onclick="window.closeCustomOrderModal()" class="absolute top-4 left-4 w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-200"><i class="fa-solid fa-xmark"></i></button>
+                <h3 class="font-black text-xl text-indigo-900 mb-4 border-b pb-3"><i class="fa-solid fa-motorcycle ml-1 text-orange-500"></i> طلب مخصص (توصيل من أي مكان)</h3>
+                <p class="text-xs text-gray-500 mb-4 font-bold">اكتب اسم المكان والطلبات اللي بدك إياها، والكابتن بجيبها وحاسب على الفاتورة.</p>
+                <div class="space-y-3">
+                    <input type="text" id="custom-place-name" class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:border-orange-500 outline-none" placeholder="اسم المكان (مثال: مخبز الأمل، سوبرماركت...)">
+                    <textarea id="custom-item-name" rows="3" class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:border-orange-500 outline-none" placeholder="شو بدك نوصيلك؟ (مثال: 2 كيلو خبز، علبة لبن)"></textarea>
+                    <button onclick="window.confirmCustomOrder()" class="w-full bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black py-3.5 rounded-xl shadow-lg text-sm mt-2">إرسال الطلب للكباتن 🚀</button>
+                </div>
+            </div>
+        </div>
 
-        <!-- نافذة تعديل بيانات المستخدم (صلاحيات الإدارة المطلقة) -->
+        <!-- Notifications Modal -->
+        <div id="notifications-modal" class="hidden absolute inset-0 bg-white z-[90] flex flex-col transition-all">
+            <div class="bg-indigo-900 text-white p-4 flex justify-between items-center shadow-md pt-6">
+                <div class="flex items-center gap-3"><button onclick="window.closeNotificationsModal()" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/20"><i class="fa-solid fa-arrow-right"></i></button><h3 class="font-bold text-sm">الإشعارات</h3></div>
+            </div>
+            <div id="notifications-list" class="flex-1 overflow-y-auto p-4 flex flex-col gap-3 bg-gray-50 hide-scrollbar">
+                <p class="text-center text-xs text-gray-400 py-10">لا توجد إشعارات</p>
+            </div>
+        </div>
+
+        <!-- نافذة التعديل للإدارة -->
         <div id="admin-edit-modal" class="hidden absolute inset-0 bg-gray-900/80 z-[90] flex items-center justify-center backdrop-blur-sm p-4 transition-all">
             <div class="bg-white w-full rounded-3xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto hide-scrollbar">
                 <button onclick="window.closeAdminEdit()" class="absolute top-4 left-4 w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-200"><i class="fa-solid fa-xmark"></i></button>
@@ -462,7 +537,7 @@
                 
                 <div class="space-y-3">
                     <div><label class="block text-xs font-bold text-gray-600 mb-1">الاسم</label><input type="text" id="edit-user-name" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-indigo-500 outline-none"></div>
-                    <div><label class="block text-xs font-bold text-gray-600 mb-1">المعرف (أرقام فقط)</label><input type="number" id="edit-user-worknum" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-indigo-500 outline-none" placeholder="لا يوجد"></div>
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">المعرف (أرقام فقط - للكباتن/المتاجر)</label><input type="text" id="edit-user-worknum" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-indigo-500 outline-none" placeholder="لا يوجد"></div>
                     <div><label class="block text-xs font-bold text-gray-600 mb-1">رقم الهاتف</label><input type="tel" id="edit-user-phone" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-indigo-500 outline-none"></div>
                     <div><label class="block text-xs font-bold text-gray-600 mb-1">كلمة المرور الجديدة</label><input type="text" id="edit-user-pass" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-indigo-500 outline-none"></div>
                     
@@ -499,7 +574,7 @@
                 <div class="mb-4 bg-gray-50 p-4 rounded-xl border border-gray-100 space-y-3">
                     <div id="checkout-items-summary" class="text-sm font-bold text-gray-700 mb-2 border-b pb-2"></div>
                     <div class="flex justify-between text-xs text-gray-500 mb-1"><span>سعر الطلب:</span><span id="checkout-item-price" class="font-bold text-gray-800"></span></div>
-                    <div class="flex justify-between text-xs text-gray-500 pb-2 border-b border-gray-200"><span>أجرة التوصيل الثابتة:</span><span class="font-bold text-gray-800">1.00 JOD</span></div>
+                    <div class="flex justify-between text-xs text-gray-500 pb-2 border-b border-gray-200"><span>أجرة التوصيل الثابتة:</span><span id="checkout-delivery-fee" class="font-bold text-gray-800">1.00 JOD</span></div>
                     
                     <!-- التوقيت المجدول والملاحظات -->
                     <div>
@@ -511,7 +586,7 @@
                     </div>
                     <div><textarea id="checkout-notes" rows="2" class="w-full px-3 py-2 rounded-lg border border-gray-200 text-xs outline-none focus:border-indigo-500" placeholder="ملاحظات للمطعم (بدون بصل، كثر صوص...)"></textarea></div>
 
-                    <div class="flex items-center justify-between mt-2 bg-green-50 p-2 rounded border border-green-100" id="checkout-wallet-section">
+                    <div class="flex items-center justify-between mt-2 bg-green-50 p-2 rounded border border-green-100 hidden" id="checkout-wallet-section">
                         <span class="text-xs font-bold text-green-800">استخدام رصيد محفظتي (<span id="checkout-wallet-bal">0</span> JOD)</span>
                         <input type="checkbox" id="checkout-use-wallet" onchange="window.toggleWalletDiscount()" class="w-4 h-4 text-green-500 rounded focus:ring-green-500">
                     </div>
@@ -531,11 +606,23 @@
                 <div class="space-y-4 mb-6 text-right">
                     <div>
                         <p class="text-xs font-bold text-gray-700 mb-1 text-center">تقييم الكابتن (السرعة والتعامل)</p>
-                        <div class="flex gap-2 star-rating text-2xl justify-center" id="rating-captain-stars"><i class="fa-solid fa-star active" data-val="1" onclick="window.selectRating('cap', 1)"></i><i class="fa-solid fa-star active" data-val="2" onclick="window.selectRating('cap', 2)"></i><i class="fa-solid fa-star active" data-val="3" onclick="window.selectRating('cap', 3)"></i><i class="fa-solid fa-star active" data-val="4" onclick="window.selectRating('cap', 4)"></i><i class="fa-solid fa-star active" data-val="5" onclick="window.selectRating('cap', 5)"></i></div>
+                        <div class="flex gap-2 star-rating text-2xl justify-center" id="rating-captain-stars">
+                            <i class="fa-solid fa-star active" data-val="1" onclick="window.selectRating('cap', 1)"></i>
+                            <i class="fa-solid fa-star active" data-val="2" onclick="window.selectRating('cap', 2)"></i>
+                            <i class="fa-solid fa-star active" data-val="3" onclick="window.selectRating('cap', 3)"></i>
+                            <i class="fa-solid fa-star active" data-val="4" onclick="window.selectRating('cap', 4)"></i>
+                            <i class="fa-solid fa-star active" data-val="5" onclick="window.selectRating('cap', 5)"></i>
+                        </div>
                     </div>
                     <div class="border-t pt-3">
                         <p class="text-xs font-bold text-gray-700 mb-1 text-center">تقييم المتجر (الطعم والتغليف)</p>
-                        <div class="flex gap-2 star-rating text-2xl justify-center" id="rating-merchant-stars"><i class="fa-solid fa-star active" data-val="1" onclick="window.selectRating('merch', 1)"></i><i class="fa-solid fa-star active" data-val="2" onclick="window.selectRating('merch', 2)"></i><i class="fa-solid fa-star active" data-val="3" onclick="window.selectRating('merch', 3)"></i><i class="fa-solid fa-star active" data-val="4" onclick="window.selectRating('merch', 4)"></i><i class="fa-solid fa-star active" data-val="5" onclick="window.selectRating('merch', 5)"></i></div>
+                        <div class="flex gap-2 star-rating text-2xl justify-center" id="rating-merchant-stars">
+                            <i class="fa-solid fa-star active" data-val="1" onclick="window.selectRating('merch', 1)"></i>
+                            <i class="fa-solid fa-star active" data-val="2" onclick="window.selectRating('merch', 2)"></i>
+                            <i class="fa-solid fa-star active" data-val="3" onclick="window.selectRating('merch', 3)"></i>
+                            <i class="fa-solid fa-star active" data-val="4" onclick="window.selectRating('merch', 4)"></i>
+                            <i class="fa-solid fa-star active" data-val="5" onclick="window.selectRating('merch', 5)"></i>
+                        </div>
                     </div>
                 </div>
                 <button onclick="window.submitRating()" class="w-full bg-gray-900 text-white font-bold py-3.5 rounded-xl shadow-lg text-sm mb-2">إرسال التقييم</button>
@@ -543,14 +630,21 @@
             </div>
         </div>
 
-        <!-- Notifications Modal -->
-        <div id="notifications-modal" class="hidden absolute inset-0 bg-gray-900/50 z-[60] flex items-end justify-center transition-all">
-            <div class="bg-white w-full h-3/4 rounded-t-[2rem] shadow-2xl flex flex-col">
-                <div class="p-5 border-b flex justify-between items-center bg-gray-50 rounded-t-[2rem]">
-                    <h3 class="font-black text-lg text-gray-800"><i class="fa-solid fa-bell text-red-500 ml-1"></i> الإشعارات</h3>
-                    <button onclick="window.closeNotificationsModal()" class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-gray-600"><i class="fa-solid fa-xmark"></i></button>
+        <!-- نافذة شحن وخصم محفظة الكابتن -->
+        <div id="topup-modal" class="hidden absolute inset-0 bg-gray-900/70 z-[80] flex items-center justify-center backdrop-blur-sm p-4 transition-all">
+            <div class="bg-white w-full rounded-3xl p-6 shadow-2xl relative">
+                <button onclick="window.closeTopUpModal()" class="absolute top-4 left-4 w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-200"><i class="fa-solid fa-xmark"></i></button>
+                <h3 class="font-black text-xl text-gray-800 mb-2"><i class="fa-solid fa-wallet text-green-500 ml-1"></i> إدارة محفظة الكابتن</h3>
+                <div class="space-y-4 mb-6 mt-4">
+                    <div class="relative">
+                        <input type="number" id="topup-amount" class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:border-green-500 outline-none text-center font-bold text-xl" placeholder="0.00">
+                        <span class="absolute left-4 top-3 text-gray-400 font-bold">JOD</span>
+                    </div>
                 </div>
-                <div id="notifications-list" class="flex-1 overflow-y-auto p-4 space-y-3 hide-scrollbar"></div>
+                <div class="flex gap-2">
+                    <button onclick="window.confirmTopUp(true)" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-black py-3 rounded-xl shadow-lg text-sm">شحن إيجابي ✅</button>
+                    <button onclick="window.confirmTopUp(false)" class="flex-1 bg-red-500 hover:bg-red-600 text-white font-black py-3 rounded-xl shadow-lg text-sm">خصم عقوبة 🚫</button>
+                </div>
             </div>
         </div>
 
@@ -568,26 +662,29 @@
         </div>
     </div>
 
-    <!-- Firebase SDKs -->
+    <!-- Firebase SDKs & System Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, getDocs, query, where, serverTimestamp, arrayUnion } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, getDocs, query, where, serverTimestamp, arrayUnion, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // ==================== CONFIGURATION ====================
-        const firebaseConfig = {
-          apiKey: "AIzaSyC8_o7E8xN6ba-_guVf0izSBNwlgdHcXL4",
-          authDomain: "qutaiba-express.firebaseapp.com",
-          projectId: "qutaiba-express",
-          storageBucket: "qutaiba-express.firebasestorage.app",
-          messagingSenderId: "657701995034",
-          appId: "1:657701995034:web:e5348dbb914a34b5e287a3"
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+            apiKey: "AIzaSyC8_o7E8xN6ba-_guVf0izSBNwlgdHcXL4",
+            authDomain: "qutaiba-express.firebaseapp.com",
+            projectId: "qutaiba-express",
+            storageBucket: "qutaiba-express.firebasestorage.app",
+            messagingSenderId: "657701995034",
+            appId: "1:657701995034:web:e5348dbb914a34b5e287a3"
         };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const getCollection = (colName) => collection(db, colName);
-        const getDocRef = (colName, docId) => doc(db, colName, docId);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'fazaa-app';
+
+        // Helper wrappers for strict paths mandate
+        const getCollection = (colName) => collection(db, 'artifacts', appId, 'public', 'data', colName);
+        const getDocRef = (colName, docId) => doc(db, 'artifacts', appId, 'public', 'data', colName, docId);
 
         // ==================== GLOBAL STATE VARIABLES ====================
         let currentUser = null; let currentUserData = null; let currentUserRole = '';
@@ -600,7 +697,7 @@
         let checkoutItem = null, checkoutBasePrice = 0, checkoutDelivery = 1.00;
         let walletDiscountActive = false, appliedWalletDiscount = 0;
         let currentChatOrderId = null, ratingTargetOrderId = null, ratingTargetCaptainId = null, ratingTargetMerchantId = null;
-        let captStarVal = 5, merchStarVal = 5;
+        let captStarVal = 5, merchStarVal = 5, topUpTargetId = null, topUpCurrentBal = 0;
         let targetDeleteId = null, targetDeleteCol = null;
         
         const DEDUCTION_RATE = 0.07, MIN_WALLET_BALANCE = 0.07; 
@@ -623,7 +720,7 @@
             'gas': '<i class="fa-solid fa-fire-flame-simple text-3xl text-red-500 drop-shadow-sm"></i>'
         };
 
-        // ==================== BINDING ALL FUNCTIONS TO WINDOW FIRST ====================
+        // ==================== BINDING ALL FUNCTIONS TO WINDOW ====================
         
         window.showToast = function(msg, type = 'info', img = null) { 
             const toast = document.getElementById('toast'); const tMsg = document.getElementById('toast-msg'); const tImg = document.getElementById('toast-img');
@@ -637,6 +734,98 @@
             setTimeout(() => { toast.classList.add('opacity-0', '-translate-y-4'); toast.classList.remove('translate-y-0'); }, 4500); 
         };
 
+        window.showView = function(v) { document.querySelectorAll('div[id^="view-"]').forEach(el => { el.classList.add('hidden'); el.classList.remove('flex'); }); const e = document.getElementById(`view-${v}`); if(e) { e.classList.remove('hidden'); e.classList.add('flex'); } if(currentUserRole) window.updateUI(); };
+        window.switchLoginTab = function(t) { const isCust = t === 'customer'; const fc = document.getElementById('form-customer'); if(fc) fc.classList.toggle('hidden', !isCust); const fs = document.getElementById('form-staff'); if(fs) fs.classList.toggle('hidden', isCust); const tc = document.getElementById('tab-customer'); if(tc) tc.className = `flex-1 py-2 text-sm font-bold rounded-lg transition-all ${isCust ? 'bg-white shadow text-indigo-700' : 'text-gray-500'}`; const ts = document.getElementById('tab-staff'); if(ts) ts.className = `flex-1 py-2 text-sm font-bold rounded-lg transition-all ${!isCust ? 'bg-white shadow text-indigo-700' : 'text-gray-500'}`; };
+        window.switchCustTab = function(tab) { ['home', 'cart', 'profile'].forEach(t => { const e = document.getElementById(`cust-tab-${t}`); if(e) { e.classList.toggle('hidden', t !== tab); e.classList.toggle('block', t === tab); } const btn = document.getElementById(`nav-btn-${t}`); if(btn) { if(t === tab) { btn.classList.add('nav-active'); btn.classList.remove('text-gray-400'); } else { btn.classList.remove('nav-active'); btn.classList.add('text-gray-400'); } } }); const cb = document.getElementById('cart-badge'); if(tab === 'cart' && cb) cb.classList.add('hidden'); };
+        window.switchAdminTab = function(tab) { ['dash', 'staff', 'finance', 'settings'].forEach(t => { const content = document.getElementById(`admin-${t}-content`); if(content) { content.classList.toggle('hidden', t !== tab); content.classList.toggle('block', t === tab); } const btn = document.getElementById(`tab-admin-${t}`); if(btn) { btn.className = `flex-1 min-w-[20%] py-2 text-[11px] font-bold rounded-lg transition-all ${t === tab ? 'bg-white shadow text-indigo-900' : 'text-indigo-600'}`; } }); const fb = document.getElementById('finance-badge'); if(tab === 'finance' && fb) fb.classList.add('hidden'); };
+        window.switchMerchantTab = function(tab) { ['orders', 'menu', 'dash'].forEach(t => { const e = document.getElementById(`merchant-${t}-content`); if(e) { e.classList.toggle('hidden', t !== tab); e.classList.toggle('block', t === tab); } const b = document.getElementById(`tab-merchant-${t}`); if(b) b.className = `flex-1 py-2 text-sm font-bold rounded-lg transition-all ${t === tab ? 'bg-white shadow text-pink-600' : 'text-gray-500'}`; }); };
+        
+        window.setCustCategory = function(cat) { 
+            currentCustCategory = cat; 
+            document.querySelectorAll('.cat-btn').forEach(btn => { btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-md'); btn.classList.add('bg-white', 'text-gray-600'); }); 
+            const b = document.getElementById(`btn-cat-${cat}`); 
+            if(b) { b.classList.remove('bg-white', 'text-gray-600'); b.classList.add('bg-indigo-600', 'text-white', 'shadow-md'); } 
+            window.renderCustomer(); 
+        };
+
+        window.toggleMerchantCategory = function() {
+            const role = document.getElementById('new-staff-role').value;
+            const categoryContainer = document.getElementById('new-staff-category-container'); const workNumInput = document.getElementById('new-staff-worknum');
+            if (categoryContainer) { categoryContainer.classList.toggle('hidden', role !== 'merchant'); }
+            if (workNumInput) { workNumInput.classList.toggle('hidden', role !== 'admin'); }
+        };
+
+        window.openNotificationsModal = function() { const m = document.getElementById('notifications-modal'); if(m) m.classList.remove('hidden'); };
+        window.closeNotificationsModal = function() { const m = document.getElementById('notifications-modal'); if(m) m.classList.add('hidden'); if(currentUserRole === 'customer') { const b = document.getElementById('cust-notif-badge'); if(b) b.classList.add('hidden'); } if(currentUserRole === 'merchant') { const b = document.getElementById('merch-notif-badge'); if(b) b.classList.add('hidden'); } if(currentUserRole === 'captain') { const b = document.getElementById('capt-notif-badge'); if(b) b.classList.add('hidden'); } };
+        window.openCustomOrderModal = function() { const m = document.getElementById('custom-order-modal'); if(m) m.classList.remove('hidden'); };
+        window.closeCustomOrderModal = function() { const m = document.getElementById('custom-order-modal'); if(m) m.classList.add('hidden'); };
+        window.closeCheckout = function() { const cm = document.getElementById('checkout-modal'); if(cm) cm.classList.add('hidden'); };
+        
+        window.openChat = function(orderId, otherPhone) { 
+            currentChatOrderId = orderId; 
+            const order = allOrders.find(o => o.id === orderId); 
+            const ct = document.getElementById('chat-title'); if(ct) ct.innerText = `محادثة #${order.id.substring(0,5)}`; 
+            const cc = document.getElementById('chat-call-btn'); if(cc) cc.href = `tel:${otherPhone}`; 
+            const cm = document.getElementById('chat-modal'); if(cm) cm.classList.remove('hidden'); 
+            window.renderChatMessages(order.chat || []); 
+        };
+        window.closeChat = function() { const cm = document.getElementById('chat-modal'); if(cm) cm.classList.add('hidden'); currentChatOrderId = null; };
+        
+        window.renderChatMessages = function(chatArray) {
+            const chatBox = document.getElementById('chat-messages');
+            if(!chatBox) return;
+            chatBox.innerHTML = chatArray.map(c => `
+                <div class="max-w-[80%] p-3 text-sm shadow-sm ${c.sender === currentUserRole ? 'chat-me' : 'chat-other'}">
+                    <p class="whitespace-pre-wrap">${c.text}</p>
+                    <span class="text-[9px] opacity-70 mt-1 block">${c.time}</span>
+                </div>
+            `).join('');
+            chatBox.scrollTop = chatBox.scrollHeight;
+        };
+
+        window.openRatingModal = function(orderId, captainId, merchantId) { ratingTargetOrderId = orderId; ratingTargetCaptainId = captainId; ratingTargetMerchantId = merchantId; captStarVal = 5; merchStarVal = 5; document.querySelectorAll('#rating-captain-stars i').forEach(el => { el.classList.add('active'); el.style.color = '#fbbf24'; }); document.querySelectorAll('#rating-merchant-stars i').forEach(el => { el.classList.add('active'); el.style.color = '#fbbf24'; }); const rm = document.getElementById('rating-modal'); if(rm) rm.classList.remove('hidden'); };
+        window.closeRatingModal = function() { const rm = document.getElementById('rating-modal'); if(rm) rm.classList.add('hidden'); };
+        window.selectRating = function(type, val) {
+            if (type === 'cap') {
+                captStarVal = val;
+                document.querySelectorAll('#rating-captain-stars i').forEach(el => {
+                    el.classList.toggle('active', parseInt(el.dataset.val) <= val);
+                    el.style.color = parseInt(el.dataset.val) <= val ? '#fbbf24' : '#d1d5db';
+                });
+            } else {
+                merchStarVal = val;
+                document.querySelectorAll('#rating-merchant-stars i').forEach(el => {
+                    el.classList.toggle('active', parseInt(el.dataset.val) <= val);
+                    el.style.color = parseInt(el.dataset.val) <= val ? '#fbbf24' : '#d1d5db';
+                });
+            }
+        };
+
+        window.openAdminEdit = function(colName, docId) { const modal = document.getElementById('admin-edit-modal'); if(!modal) return; const target = colName === 'users' ? allUsers.find(u => u.id === docId) : allStaff.find(s => s.id === docId); if(!target) return; document.getElementById('edit-user-id').value = target.id; document.getElementById('edit-user-col').value = colName; document.getElementById('edit-user-name').value = target.name; document.getElementById('edit-user-phone').value = target.phone || ''; document.getElementById('edit-user-pass').value = target.password || ''; const wNumInput = document.getElementById('edit-user-worknum'); if(colName === 'staff') { wNumInput.value = target.workNumber || ''; wNumInput.disabled = false; } else { wNumInput.value = ''; wNumInput.disabled = true; } document.getElementById('edit-user-wallet').value = target.walletBalance || 0; document.getElementById('edit-user-points').value = target.loyaltyPoints || 0; modal.classList.remove('hidden'); };
+        window.closeAdminEdit = function() { const m = document.getElementById('admin-edit-modal'); if(m) m.classList.add('hidden'); };
+        window.openTopUpModal = function(id, bal) { topUpTargetId = id; topUpCurrentBal = bal; document.getElementById('topup-amount').value = ''; document.getElementById('topup-modal').classList.remove('hidden'); };
+        window.closeTopUpModal = function() { document.getElementById('topup-modal').classList.add('hidden'); topUpTargetId = null; };
+        
+        window.confirmDeleteUser = function(docId, colName) { targetDeleteId = docId; targetDeleteCol = colName; document.getElementById('delete-confirm-modal').classList.remove('hidden'); };
+        window.executeDeleteUser = async function() {
+            if(!targetDeleteId || !targetDeleteCol) return;
+            try {
+                await deleteDoc(getDocRef(targetDeleteCol, targetDeleteId));
+                window.showToast('تم الحذف بنجاح', 'success');
+            } catch(e) { window.showToast('فشل الحذف', 'error'); }
+            document.getElementById('delete-confirm-modal').classList.add('hidden');
+        };
+
+        window.sendAppNotification = async function(recipientId, message, image = null) {
+            try {
+                await addDoc(getCollection('notifications'), { recipientId, message, image, read: false, timestamp: serverTimestamp() });
+            } catch(e) { console.error("Error sending notif", e); }
+        };
+
+        window.updateAdminNotifDropdown = function() {
+            // Function exists to avoid errors, predefined statically in HTML options.
+        };
+
         window.updateUI = function() {
             if (currentUserRole === 'customer') window.renderCustomer();
             if (currentUserRole === 'merchant') window.renderMerchant();
@@ -644,20 +833,10 @@
             if (currentUserRole === 'admin' || currentUserRole === 'support') window.renderAdmin();
         };
 
-        // --- Notifications ---
-        window.openNotificationsModal = function() { const m = document.getElementById('notifications-modal'); if(m) m.classList.remove('hidden'); };
-        window.closeNotificationsModal = function() { 
-            const m = document.getElementById('notifications-modal'); if(m) m.classList.add('hidden'); 
-            if(currentUserRole === 'customer') { const b = document.getElementById('cust-notif-badge'); if(b) b.classList.add('hidden'); } 
-            if(currentUserRole === 'merchant') { const b = document.getElementById('merch-notif-badge'); if(b) b.classList.add('hidden'); } 
-            if(currentUserRole === 'captain') { const b = document.getElementById('capt-notif-badge'); if(b) b.classList.add('hidden'); } 
-        };
-
         window.renderCustomer = function() {
             let searchTerm = document.getElementById('cust-search')?.value.toLowerCase() || '';
             let sortOrder = document.getElementById('cust-sort')?.value || 'none';
 
-            // Flash Sales
             const flashContainer = document.getElementById('flash-sales-container');
             const flashList = document.getElementById('flash-sales-list');
             const flashItems = allMenu.filter(m => m.isFlashSale && !m.isSoldOut);
@@ -666,8 +845,6 @@
                 flashList.innerHTML = flashItems.map(m => `<div class="bg-red-500 text-white p-2 rounded-xl min-w-[120px] shadow border border-red-400"> <p class="text-[10px] font-bold truncate">${m.name}</p><p class="text-xs font-black">${m.price} JOD 🔥</p><button onclick="window.addToCart('${m.name}', ${m.price}, '${m.merchantName}', '${m.merchantId}')" class="w-full mt-1 bg-white text-red-600 text-[10px] font-bold py-1 rounded">إضافة للسلة</button></div>`).join('');
             } else if(flashContainer) flashContainer.classList.add('hidden');
 
-            const menuList = document.getElementById('customer-menu-list'); 
-            
             if(currentStoreViewId === null) {
                 const storesView = document.getElementById('cust-stores-view');
                 const menuView = document.getElementById('cust-menu-view');
@@ -718,14 +895,6 @@
         window.openStore = function(storeId, storeName) { currentStoreViewId = storeId; const title = document.getElementById('store-menu-title'); if(title) title.innerText = storeName; window.renderCustomer(); };
         window.closeStoreMenu = function() { currentStoreViewId = null; window.renderCustomer(); };
         
-        window.setCustCategory = function(cat) { 
-            currentCustCategory = cat; 
-            document.querySelectorAll('.cat-btn').forEach(btn => { btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-md'); btn.classList.add('bg-white', 'text-gray-600'); }); 
-            const b = document.getElementById(`btn-cat-${cat}`); 
-            if(b) { b.classList.remove('bg-white', 'text-gray-600'); b.classList.add('bg-indigo-600', 'text-white', 'shadow-md'); } 
-            window.renderCustomer(); 
-        };
-
         window.addToCart = function(name, price, mName, mId) {
             if(customerCart.length > 0 && customerCart[0].mId !== mId) return window.showToast('لا يمكن إضافة منتجات من متاجر مختلفة في نفس السلة.', 'error');
             customerCart.push({ name, price, mName, mId }); window.showToast('تمت الإضافة للسلة 🛒', 'success');
@@ -768,7 +937,6 @@
                 }
             }
 
-            // Update profile history list
             const histList = document.getElementById('profile-order-history');
             if(histList) {
                 const delOrders = myOrders.filter(o => o.status === 'delivered');
@@ -809,6 +977,11 @@
             window.updateCheckoutTotal(); document.getElementById('checkout-modal').classList.remove('hidden');
         };
 
+        window.toggleWalletDiscount = function() {
+            walletDiscountActive = document.getElementById('checkout-use-wallet')?.checked || false;
+            window.updateCheckoutTotal();
+        };
+
         window.renderMerchant = function() {
             const list = document.getElementById('merchant-orders-list'); const activeOrders = allOrders.filter(o => (o.status === 'pending' || o.status === 'preparing') && o.merchantId === currentUserData?.id);
             if(list) {
@@ -844,6 +1017,72 @@
             const oCount = document.getElementById('merch-orders-count'); if(oCount) oCount.innerText = totalOrders;
         };
 
+        window.toggleMerchantStatus = async function(el) {
+            if(currentUserRole !== 'merchant' || !currentUserData) return;
+            try {
+                await updateDoc(getDocRef('staff', currentUserData.id), { isOnline: el.checked });
+                window.showToast(el.checked ? 'المتجر متاح لاستقبال الطلبات' : 'تم إغلاق المتجر مؤقتاً', 'info');
+            } catch(e) { window.showToast('حدث خطأ', 'error'); }
+        };
+
+        window.toggleMenuSoldOut = async function(id, currentState) {
+            try {
+                await updateDoc(getDocRef('menu', id), { isSoldOut: !currentState });
+            } catch(e) { window.showToast('حدث خطأ', 'error'); }
+        };
+
+        window.addMenuItem = async function() {
+            if(currentUserRole !== 'merchant') return;
+            const name = document.getElementById('new-item-name').value.trim();
+            const cat = document.getElementById('new-item-category').value.trim();
+            const price = parseFloat(document.getElementById('new-item-price').value);
+            const addons = document.getElementById('new-item-addons').value.trim();
+            const isFlash = document.getElementById('new-item-flash').checked;
+
+            if(!name || !cat || isNaN(price)) return window.showToast('أكمل البيانات الأساسية والسعر', 'error');
+
+            try {
+                await addDoc(getCollection('menu'), {
+                    merchantId: currentUserData.id,
+                    merchantName: currentUserData.name,
+                    name: name,
+                    category: cat,
+                    price: price,
+                    addons: addons,
+                    isFlashSale: isFlash,
+                    isSoldOut: false,
+                    image: '', 
+                    timestamp: serverTimestamp()
+                });
+                window.showToast('تمت إضافة الصنف بنجاح', 'success');
+                document.getElementById('new-item-name').value = '';
+                document.getElementById('new-item-price').value = '';
+            } catch(e) { window.showToast('خطأ أثناء الإضافة', 'error'); }
+        };
+
+        window.askAIFood = function() {
+            const res = document.getElementById('ai-food-result');
+            if (res) {
+                res.classList.remove('hidden');
+                res.innerHTML = "✨ المساعد الذكي يقترح عليك: 'شاورما دبل' من أقرب مطعم لك! 🍔 (ميزة تجريبية)";
+            }
+        };
+
+        window.generateAIItemName = function() {
+            const input = document.getElementById('new-item-name');
+            if(input && input.value.trim()) input.value = "✨ " + input.value + " المميز";
+        };
+
+        window.previewImageName = function(input) {
+            const preview = document.getElementById('image-preview-name');
+            if(input.files && input.files[0] && preview) {
+                preview.innerText = "صورة المرفقة: " + input.files[0].name;
+                preview.classList.remove('hidden');
+            } else if (preview) {
+                preview.classList.add('hidden');
+            }
+        };
+
         window.renderCaptain = function() {
             const list = document.getElementById('captain-orders-list'); const activeOrders = allOrders.filter(o => o.status === 'ready' || (o.status === 'on_the_way' && o.captainId === currentUserData?.id));
             const bal = currentUserData?.walletBalance || 0;
@@ -874,20 +1113,15 @@
             let totalSales = 0; allOrders.forEach(o => { if(o.status === 'delivered' && o.type !== 'custom') totalSales += (o.price + o.deliveryFee); });
             const sTotal = document.getElementById('admin-total-sales'); if(sTotal) sTotal.innerText = totalSales.toFixed(2); 
             const sProf = document.getElementById('admin-profits'); if(sProf) sProf.innerText = (totalSales * adminCommissionRate).toFixed(2);
+            
+            // تحديث الكباتن الحية
+            const capCount = document.getElementById('live-captains-count');
+            if (capCount) capCount.innerText = allStaff.filter(s => s.role === 'captain' && s.isOnline).length;
+
             const list = document.getElementById('admin-orders-list');
             if(list) {
                 if (allOrders.length === 0) list.innerHTML = '<p class="text-center text-gray-400 py-8 text-sm">لا نشاط</p>';
                 else list.innerHTML = allOrders.slice(0,20).map(order => `<div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center mb-2"><div><p class="font-bold text-sm text-gray-800">${(order.item || '').substring(0,25)}..</p><p class="text-[10px] ${statusMap[order.status]?.color || 'bg-gray-100 text-gray-700'} px-2 py-0.5 rounded-full mt-1 font-bold inline-block">${statusMap[order.status]?.text || 'غير معروف'}</p></div><div class="text-left"><p class="font-black text-sm text-indigo-600">${order.type==='custom'?'فاتورة':(order.price+order.deliveryFee).toFixed(2)} JOD</p></div></div>`).join('');
-            }
-            
-            const capCount = document.getElementById('live-captains-count');
-            if(capCount) capCount.innerText = allStaff.filter(s => s.role === 'captain' && s.isOnline && !s.banned).length;
-            
-            const pStore = document.getElementById('new-promo-store');
-            if(pStore) {
-                let html = '<option value="all">صالح لجميع المتاجر</option>';
-                allStaff.filter(s=>s.role==='merchant').forEach(s => html += `<option value="${s.id}">${s.name}</option>`);
-                pStore.innerHTML = html;
             }
         };
 
@@ -957,44 +1191,6 @@
             list.innerHTML = myNotifs.map(n => `<div class="p-3 bg-white rounded-xl shadow-sm border ${n.read ? 'border-gray-100 opacity-70' : 'border-indigo-200 bg-indigo-50/30'}"> ${n.image ? `<img src="${n.image}" class="w-full h-24 object-cover rounded-lg mb-2">` : ''} <p class="text-sm font-bold text-gray-800">${n.message}</p></div>`).join('');
         };
 
-        window.startFirestoreListeners = function() {
-            unsubs.forEach(unsub => unsub()); unsubs = [];
-            if(!currentUser) return;
-            unsubs.push(onSnapshot(getDocRef('settings', 'app_config'), (docSnap) => { if(docSnap.exists()) { appSettings = docSnap.data(); window.applyAppSettings(); }}));
-            unsubs.push(onSnapshot(getCollection('orders'), (snapshot) => {
-                const newOrders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                newOrders.sort((a, b) => (b.timestamp?.toMillis() || 0) - (a.timestamp?.toMillis() || 0));
-                if(currentUserRole === 'customer') { const myActive = newOrders.filter(o => o.customerId === (currentUserData?.uid || 'demo_cust') && o.status !== 'delivered'); const b = document.getElementById('cart-badge'); if(b) b.classList.toggle('hidden', myActive.length === 0); }
-                if(currentChatOrderId) { const activeO = newOrders.find(o => o.id === currentChatOrderId); if(activeO) window.renderChatMessages(activeO.chat || []); }
-                allOrders = newOrders; window.updateUI();
-            }));
-            unsubs.push(onSnapshot(getCollection('staff'), (snapshot) => {
-                allStaff = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                if (currentUserRole === 'captain' && currentUserData) { const me = allStaff.find(s => s.id === currentUserData.id); if(me) { currentUserData.walletBalance = me.walletBalance; window.updateCaptainWalletUI(); } }
-                if (currentUserRole === 'admin') { window.renderAdminStaffList(); window.updateAdminNotifDropdown(); }
-            }));
-            unsubs.push(onSnapshot(getCollection('users'), (snap) => { 
-                allUsers = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); 
-                if(currentUserRole === 'customer' && currentUserData) {
-                    const me = allUsers.find(u => u.uid === currentUserData.uid);
-                    if(me) { 
-                        currentUserData.loyaltyPoints = me.loyaltyPoints || 0; currentUserData.walletBalance = me.walletBalance || 0;
-                        const pEl = document.getElementById('prof-points'); if(pEl) pEl.innerText = currentUserData.loyaltyPoints; 
-                        const cEl = document.getElementById('cust-points-display'); if(cEl) cEl.innerText = currentUserData.loyaltyPoints; 
-                        const wEl = document.getElementById('prof-wallet'); if(wEl) wEl.innerText = currentUserData.walletBalance.toFixed(2);
-                        const convertBtn = document.getElementById('convert-points-section'); if(convertBtn) { if(currentUserData.loyaltyPoints >= 1000) convertBtn.classList.remove('hidden'); else convertBtn.classList.add('hidden'); }
-                    }
-                }
-                if(currentUserRole === 'admin') window.updateAdminNotifDropdown();
-            }));
-            unsubs.push(onSnapshot(getCollection('point_requests'), (snap) => {
-                allPointRequests = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                if(currentUserRole === 'admin') { const pending = allPointRequests.filter(r => r.status === 'pending'); const fb = document.getElementById('finance-badge'); if(fb) fb.classList.toggle('hidden', pending.length === 0); window.renderAdminFinance(); }
-            }));
-            unsubs.push(onSnapshot(getCollection('notifications'), (snap) => { allNotifications = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a, b) => (b.timestamp?.toMillis() || 0) - (a.timestamp?.toMillis() || 0)); window.updateNotificationsUI(); }));
-            unsubs.push(onSnapshot(getCollection('menu'), (snap) => { allMenu = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); window.updateUI(); }));
-        };
-
         window.updateCaptainWalletUI = function() {
             if(currentUserRole !== 'captain' || !currentUserData) return;
             const bal = currentUserData.walletBalance || 0; const disp = document.getElementById('captain-wallet-display'); if(disp) disp.innerText = bal.toFixed(2);
@@ -1037,34 +1233,135 @@
             window.switchCustTab('home'); window.updateNotificationsUI();
         };
 
-        window.showView = function(v) { document.querySelectorAll('div[id^="view-"]').forEach(el => { el.classList.add('hidden'); el.classList.remove('flex'); }); const e = document.getElementById(`view-${v}`); if(e) { e.classList.remove('hidden'); e.classList.add('flex'); } if(currentUserRole) window.updateUI(); };
-        window.switchLoginTab = function(t) { const isCust = t === 'customer'; const fc = document.getElementById('form-customer'); if(fc) fc.classList.toggle('hidden', !isCust); const fs = document.getElementById('form-staff'); if(fs) fs.classList.toggle('hidden', isCust); const tc = document.getElementById('tab-customer'); if(tc) tc.className = `flex-1 py-2 text-sm font-bold rounded-lg transition-all ${isCust ? 'bg-white shadow text-indigo-700' : 'text-gray-500'}`; const ts = document.getElementById('tab-staff'); if(ts) ts.className = `flex-1 py-2 text-sm font-bold rounded-lg transition-all ${!isCust ? 'bg-white shadow text-indigo-700' : 'text-gray-500'}`; };
-        window.switchCustTab = function(tab) { ['home', 'cart', 'profile'].forEach(t => { const e = document.getElementById(`cust-tab-${t}`); if(e) { e.classList.toggle('hidden', t !== tab); e.classList.toggle('block', t === tab); } const btn = document.getElementById(`nav-btn-${t}`); if(btn) { if(t === tab) { btn.classList.add('nav-active'); btn.classList.remove('text-gray-400'); } else { btn.classList.remove('nav-active'); btn.classList.add('text-gray-400'); } } }); const cb = document.getElementById('cart-badge'); if(tab === 'cart' && cb) cb.classList.add('hidden'); };
-        window.switchAdminTab = function(tab) { ['dash', 'staff', 'finance', 'notifs'].forEach(t => { const content = document.getElementById(`admin-${t}-content`); if(content) { content.classList.toggle('hidden', t !== tab); content.classList.toggle('block', t === tab); } const btn = document.getElementById(`tab-admin-${t}`); if(btn) { btn.className = `flex-1 min-w-[20%] py-2 text-[11px] font-bold rounded-lg transition-all ${t === tab ? 'bg-white shadow text-indigo-900' : 'text-indigo-600'}`; } }); const fb = document.getElementById('finance-badge'); if(tab === 'finance' && fb) fb.classList.add('hidden'); };
-        window.switchMerchantTab = function(tab) { ['orders', 'menu', 'dash'].forEach(t => { const e = document.getElementById(`merchant-${t}-content`); if(e) { e.classList.toggle('hidden', t !== tab); e.classList.toggle('block', t === tab); } const b = document.getElementById(`tab-merchant-${t}`); if(b) b.className = `flex-1 py-2 text-sm font-bold rounded-lg transition-all ${t === tab ? 'bg-white shadow text-pink-600' : 'text-gray-500'}`; }); };
-
         window.loginCustomer = async function() { const phone = document.getElementById('login-phone').value.trim(); const pass = document.getElementById('login-password').value; if(!phone || !pass) return window.showToast('أدخل البيانات', 'error'); const foundUser = allUsers.find(u => u.phone === phone && u.password === pass); if (foundUser) { if(foundUser.banned) return window.showToast('حساب محظور 🚫', 'error'); currentUserData = foundUser; currentUserRole = 'customer'; window.setupCustomerProfile(); window.showView('customer'); } else window.showToast('البيانات غير صحيحة', 'error'); };
         window.loginStaff = async function() { const role = document.getElementById('login-staff-role').value; const workNum = document.getElementById('login-staff-worknum').value.trim().toUpperCase(); const pass = document.getElementById('login-staff-password').value; if (role === 'admin' && workNum === '2150502071' && pass === 'Moath1234') { currentUserRole = 'admin'; currentUserData = { name: 'معاذ الخوالدة', role: 'admin' }; const an = document.getElementById('admin-name-display'); if(an) an.innerText = 'معاذ'; window.showView('admin'); return; } const foundStaff = allStaff.find(s => s.role === role && s.workNumber === workNum && s.password === pass); if (foundStaff) { if(foundStaff.banned) return window.showToast('الحساب محظور 🚫', 'error'); currentUserData = foundStaff; currentUserRole = role; if (role === 'admin' || role === 'support') { const an = document.getElementById('admin-name-display'); if(an) an.innerText = currentUserData.name.split(' ')[0]; window.showView('admin'); } else if (role === 'merchant') { const mn = document.getElementById('merchant-name-display'); if(mn) mn.innerText = currentUserData.name; window.showView('merchant'); } else if (role === 'captain') { const cn = document.getElementById('captain-name-display'); if(cn) cn.innerText = currentUserData.name; const cr = document.getElementById('captain-rating-display'); if(cr) cr.innerText = currentUserData.ratingCount ? (currentUserData.ratingSum / currentUserData.ratingCount).toFixed(1) : '5.0'; window.updateCaptainWalletUI(); window.showView('captain'); } window.updateNotificationsUI(); } else { window.showToast('البيانات غير صحيحة', 'error'); } };
         window.registerCustomer = async function() { const name = document.getElementById('reg-name').value.trim(); const phone = document.getElementById('reg-phone').value.trim(); const loc = document.getElementById('reg-location').value.trim(); const pass = document.getElementById('reg-password').value; if(!name || !phone || !loc || !pass) return window.showToast('أكمل الحقول', 'error'); const uid = "cust_" + Math.random().toString(36).substr(2, 9); currentUserData = { uid: uid, name: name, phone: phone, location: loc, password: pass, role: 'customer', loyaltyPoints: 0, walletBalance: 0, banned: false }; await addDoc(getCollection('users'), currentUserData); currentUserRole = 'customer'; window.setupCustomerProfile(); window.showView('customer'); window.showToast('تم التسجيل بنجاح', 'success'); window.sendAppNotification(uid, 'أهلاً بك في فزعة!'); };
+        
+        window.seedDummyData = async function() {
+            if(currentUserRole !== 'admin') return;
+            window.showToast('جاري إضافة بيانات تجريبية...', 'info');
+            try {
+                await addDoc(getCollection('staff'), { role: 'merchant', businessType: 'restaurant', name: 'مطعم فزعة', workNumber: 'QE-1111', phone: '0790000000', password: '123', walletBalance: 0, isOnline: true, banned: false, createdAt: serverTimestamp() });
+                await addDoc(getCollection('staff'), { role: 'captain', name: 'كابتن أحمد', workNumber: 'QE-2222', phone: '0780000000', password: '123', walletBalance: 15, isOnline: true, banned: false, ratingCount: 0, ratingSum: 0, createdAt: serverTimestamp() });
+                window.showToast('تمت إضافة البيانات التجريبية!', 'success');
+            } catch(e) { window.showToast('فشل إضافة البيانات', 'error'); }
+        };
+
+        window.addPromo = async function() {
+            if(currentUserRole !== 'admin') return;
+            const code = document.getElementById('new-promo-code').value.trim().toUpperCase();
+            const discount = parseFloat(document.getElementById('new-promo-discount').value);
+            if(!code || isNaN(discount)) return window.showToast('أدخل الكود وقيمة الخصم', 'error');
+            try {
+                await addDoc(getCollection('promos'), { code, discount, active: true });
+                window.showToast('تم إصدار الكوبون بنجاح', 'success');
+                document.getElementById('new-promo-code').value = '';
+                document.getElementById('new-promo-discount').value = '';
+            } catch(e) { window.showToast('خطأ أثناء الإصدار', 'error'); }
+        };
+
         window.registerStaff = async function() { if (currentUserRole !== 'admin') return; const role = document.getElementById('new-staff-role').value; const cat = role === 'merchant' ? document.getElementById('new-staff-category').value : null; const name = document.getElementById('new-staff-name').value.trim(); const phone = document.getElementById('new-staff-phone').value.trim(); const pass = document.getElementById('new-staff-password').value; const cWorkNum = document.getElementById('new-staff-worknum').value.trim(); const workNum = (role === 'admin' && cWorkNum) ? cWorkNum : `QE-${Math.floor(1000 + Math.random() * 9000)}`; if(!name || !phone || !pass || (role === 'admin' && !cWorkNum)) return window.showToast('أكمل البيانات بالكامل', 'error'); await addDoc(getCollection('staff'), { role, businessType: cat, name, workNumber: workNum, phone, password: pass, walletBalance: 0, isOnline: true, banned: false, createdAt: serverTimestamp() }); window.showToast(`تم إضافة ${name}. رقمه: ${workNum}`, 'success'); document.getElementById('new-staff-name').value = ''; document.getElementById('new-staff-phone').value = ''; document.getElementById('new-staff-password').value = ''; document.getElementById('new-staff-worknum').value = ''; };
         window.logout = function() { currentUserRole = ''; currentUserData = null; customerCart = []; window.showView('login'); };
         window.getLocation = function() { const locInput = document.getElementById('reg-location'); locInput.value = "جاري البحث..."; if (navigator.geolocation) { navigator.geolocation.getCurrentPosition((pos) => { locInput.value = `${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`; window.showToast('تم التقاط الموقع', 'success'); }, (e) => { window.showToast('اسمح بالوصول', 'error'); }, { enableHighAccuracy: true }); } else { window.showToast('لا يدعم', 'error'); } };
         
-        window.confirmOrderPlacement = async function() { const finalCash = (checkoutBasePrice + checkoutDelivery) - appliedWalletDiscount; const timePref = document.getElementById('checkout-time')?.value || 'now'; const notes = document.getElementById('checkout-notes')?.value.trim() || ''; await addDoc(getCollection('orders'), { type: 'standard', merchantId: checkoutItem.mId, customerId: currentUserData.uid || 'demo_cust', customerName: currentUserData.name, customerPhone: currentUserData.phone || '0000', customerLocation: currentUserData.location || 'المفرق', item: checkoutItem.name, price: checkoutBasePrice, deliveryFee: checkoutDelivery, walletPaid: appliedWalletDiscount, cashToPay: finalCash, status: 'pending', chat: [], scheduledTime: timePref, notes: notes, rated: false, timestamp: serverTimestamp() }); if(appliedWalletDiscount > 0 && currentUserData.uid !== 'demo_cust') { const userQ = await getDocs(query(getCollection('users'), where('uid','==',currentUserData.uid))); if(!userQ.empty) updateDoc(doc(db, 'users', userQ.docs[0].id), { walletBalance: (currentUserData.walletBalance || 0) - appliedWalletDiscount }); } customerCart = []; window.renderCartView(); window.closeCheckout(); window.showToast('تم إرسال الطلب بنجاح! 🎉', 'success'); window.switchCustTab('cart'); window.sendAppNotification(checkoutItem.mId, `طلب جديد!`); };
-        window.updateOrderStatus = async function(orderId, newStatus) { const payload = { status: newStatus }; const order = allOrders.find(o => o.id === orderId); if(newStatus === 'preparing' && order) window.sendAppNotification(order.customerId, 'المتجر بدأ بتجهيز طلبك 👨‍🍳'); if(newStatus === 'ready') window.sendAppNotification('captains', `طلب جاهز للتوصيل!`); if(newStatus === 'on_the_way' && currentUserRole === 'captain') { payload.captainPhone = currentUserData.phone || '0000'; payload.captainId = currentUserData.id; if(order) { window.sendAppNotification(order.customerId, `الكابتن ${currentUserData.name} استلم الطلب وهو بالطريق! 🛵`); if(order.merchantId) window.sendAppNotification(order.merchantId, `تم استلام الطلب من الكابتن.`); } } await updateDoc(doc(db, 'orders', orderId), payload); };
-        window.finishDelivery = async function(orderId, fee) { const deduction = fee * DEDUCTION_RATE; const bal = currentUserData.walletBalance || 0; if(bal < deduction) return window.showToast('رصيد المحفظة لا يكفي', 'error'); await window.updateOrderStatus(orderId, 'delivered'); await updateDoc(doc(db, 'staff', currentUserData.id), { walletBalance: bal - deduction }); window.showToast(`تم التسليم (خُصم ${deduction.toFixed(2)} JOD)`, 'success'); const order = allOrders.find(o => o.id === orderId); if(order && order.customerId !== 'demo_cust') { const points = 10; const userQ = await getDocs(query(getCollection('users'), where('uid','==',order.customerId))); if(!userQ.empty) { const uDoc = userQ.docs[0]; updateDoc(doc(db, 'users', uDoc.id), { loyaltyPoints: (uDoc.data().loyaltyPoints || 0) + points }); window.sendAppNotification(order.customerId, `تم التوصيل بنجاح ✅ كسبت ${points} نقاط ولاء!`); } } };
-        window.sendChatMessage = async function() { const input = document.getElementById('chat-input-text'); const text = input.value.trim(); if(!text || !currentChatOrderId) return; input.value = ''; await updateDoc(doc(db, 'orders', currentChatOrderId), { chat: arrayUnion({ sender: currentUserRole, text: text, time: new Date().toLocaleTimeString('ar-JO', {hour:'2-digit', minute:'2-digit'}) }) }); };
-        
-        // --- Admin Specific Methods ---
-        window.confirmDeleteUser = function(docId, colName) { targetDeleteId = docId; targetDeleteCol = colName; document.getElementById('delete-confirm-modal').classList.remove('hidden'); };
-        window.executeDeleteUser = async function() { if(!targetDeleteId || !targetDeleteCol) return; try { await deleteDoc(doc(db, targetDeleteCol, targetDeleteId)); window.showToast('تم الحذف بنجاح 🗑️', 'success'); } catch(e) { window.showToast('خطأ في الحذف', 'error'); } document.getElementById('delete-confirm-modal').classList.add('hidden'); targetDeleteId = null; targetDeleteCol = null; };
+        window.confirmOrderPlacement = async function() { const finalCash = (checkoutBasePrice + checkoutDelivery) - appliedWalletDiscount; const timePref = document.getElementById('checkout-time')?.value || 'now'; const notes = document.getElementById('checkout-notes')?.value.trim() || ''; await addDoc(getCollection('orders'), { type: 'standard', merchantId: checkoutItem.mId, customerId: currentUserData.uid || 'demo_cust', customerName: currentUserData.name, customerPhone: currentUserData.phone || '0000', customerLocation: currentUserData.location || 'المفرق', item: checkoutItem.name, price: checkoutBasePrice, deliveryFee: checkoutDelivery, walletPaid: appliedWalletDiscount, cashToPay: finalCash, status: 'pending', chat: [], scheduledTime: timePref, notes: notes, rated: false, timestamp: serverTimestamp() }); if(appliedWalletDiscount > 0 && currentUserData.uid !== 'demo_cust') { const userQ = await getDocs(query(getCollection('users'), where('uid','==',currentUserData.uid))); if(!userQ.empty) updateDoc(getDocRef('users', userQ.docs[0].id), { walletBalance: (currentUserData.walletBalance || 0) - appliedWalletDiscount }); } customerCart = []; window.renderCartView(); window.closeCheckout(); window.showToast('تم إرسال الطلب بنجاح! 🎉', 'success'); window.switchCustTab('cart'); window.sendAppNotification(checkoutItem.mId, `طلب جديد!`); };
+        window.confirmCustomOrder = async function() { const place = document.getElementById('custom-place-name').value.trim(); const details = document.getElementById('custom-item-name').value.trim(); if(!place || !details) return window.showToast('أدخل تفاصيل الطلب والمكان', 'error'); await addDoc(getCollection('orders'), { type: 'custom', customerId: currentUserData.uid || 'demo_cust', customerName: currentUserData.name, customerPhone: currentUserData.phone || '0000', customerLocation: currentUserData.location || 'المفرق', item: `${details} (من: ${place})`, price: 0, deliveryFee: 1.50, status: 'ready', chat: [], timestamp: serverTimestamp() }); window.closeCustomOrderModal(); window.showToast('تم بث الطلب للكباتن 🚀', 'success'); window.switchCustTab('cart'); window.sendAppNotification('captains', 'طلب توصيل مخصص جديد بانتظار بطل!'); };
+        window.updateOrderStatus = async function(orderId, newStatus) { const payload = { status: newStatus }; const order = allOrders.find(o => o.id === orderId); if(newStatus === 'preparing' && order) window.sendAppNotification(order.customerId, 'المتجر بدأ بتجهيز طلبك 👨‍🍳'); if(newStatus === 'ready') window.sendAppNotification('captains', `طلب جاهز للتوصيل!`); if(newStatus === 'on_the_way' && currentUserRole === 'captain') { payload.captainPhone = currentUserData.phone || '0000'; payload.captainId = currentUserData.id; if(order) { window.sendAppNotification(order.customerId, `الكابتن ${currentUserData.name} استلم الطلب وهو بالطريق! 🛵`); if(order.merchantId) window.sendAppNotification(order.merchantId, `تم استلام الطلب من الكابتن.`); } } await updateDoc(getDocRef('orders', orderId), payload); };
+        window.finishDelivery = async function(orderId, fee) { const deduction = fee * DEDUCTION_RATE; const bal = currentUserData.walletBalance || 0; if(bal < deduction) return window.showToast('رصيد المحفظة لا يكفي', 'error'); await window.updateOrderStatus(orderId, 'delivered'); await updateDoc(getDocRef('staff', currentUserData.id), { walletBalance: bal - deduction }); window.showToast(`تم التسليم (خُصم ${deduction.toFixed(2)} JOD)`, 'success'); const order = allOrders.find(o => o.id === orderId); if(order && order.customerId !== 'demo_cust') { const points = 10; const userQ = await getDocs(query(getCollection('users'), where('uid','==',order.customerId))); if(!userQ.empty) { const uDoc = userQ.docs[0]; updateDoc(getDocRef('users', uDoc.id), { loyaltyPoints: (uDoc.data().loyaltyPoints || 0) + points }); window.sendAppNotification(order.customerId, `تم التوصيل بنجاح ✅ كسبت ${points} نقاط ولاء!`); } } };
+        window.sendChatMessage = async function() { const input = document.getElementById('chat-input-text'); const text = input.value.trim(); if(!text || !currentChatOrderId) return; input.value = ''; await updateDoc(getDocRef('orders', currentChatOrderId), { chat: arrayUnion({ sender: currentUserRole, text: text, time: new Date().toLocaleTimeString('ar-JO', {hour:'2-digit', minute:'2-digit'}) }) }); };
+        window.submitRating = async function() { try { if(ratingTargetCaptainId) { const cRef = getDocRef('staff', ratingTargetCaptainId); const cDoc = allStaff.find(s => s.id === ratingTargetCaptainId); if(cDoc) await updateDoc(cRef, { ratingSum: (cDoc.ratingSum || 0) + captStarVal, ratingCount: (cDoc.ratingCount || 0) + 1 }); } if(ratingTargetMerchantId) { const mRef = getDocRef('staff', ratingTargetMerchantId); const mDoc = allStaff.find(s => s.id === ratingTargetMerchantId); if(mDoc) await updateDoc(mRef, { ratingSum: (mDoc.ratingSum || 0) + merchStarVal, ratingCount: (mDoc.ratingCount || 0) + 1 }); } await updateDoc(getDocRef('orders', ratingTargetOrderId), { rated: true }); window.showToast('شكراً لتقييمك! ⭐', 'success'); } catch(e) {} window.closeRatingModal(); window.renderCustomer(); };
+        window.deleteMenuItem = async function(id) { try { await deleteDoc(getDocRef('menu', id)); } catch(e) {} };
+        window.sendAdminNotification = async function() { if(currentUserRole !== 'admin') return; const target = document.getElementById('admin-notif-target').value; const msg = document.getElementById('admin-notif-msg').value.trim(); const img = document.getElementById('admin-notif-img')?.value.trim(); if(!msg) return window.showToast('اكتب الرسالة', 'error'); await window.sendAppNotification(target, `إعلان الإدارة: ${msg}`, img || null); window.showToast('تم بث الإشعار بنجاح', 'success'); document.getElementById('admin-notif-msg').value = ''; if(document.getElementById('admin-notif-img')) document.getElementById('admin-notif-img').value = ''; };
+        window.toggleBan = async function(collectionName, docId, currentStatus) { if(currentUserRole !== 'admin') return; try { await updateDoc(getDocRef(collectionName, docId), { banned: !currentStatus }); window.showToast(!currentStatus ? 'تم حظر المستخدم 🚫' : 'تم فك الحظر ✅', 'success'); } catch(e) { window.showToast('خطأ في التعديل', 'error'); } };
+        window.requestPointsConversion = async function() { if((currentUserData.loyaltyPoints || 0) < 1000) return window.showToast('تحتاج 1000 نقطة كحد أدنى', 'error'); try { await addDoc(getCollection('point_requests'), { customerId: currentUserData.uid, customerName: currentUserData.name, points: 1000, money: 1.00, status: 'pending', timestamp: serverTimestamp() }); window.showToast('تم إرسال طلب التحويل للإدارة', 'success'); } catch(e) { window.showToast('خطأ في الإرسال', 'error'); } };
+        window.approvePointRequest = async function(reqId, custUid) { try { const userQ = await getDocs(query(getCollection('users'), where('uid','==',custUid))); if(!userQ.empty) { const uDoc = userQ.docs[0]; const ud = uDoc.data(); if(ud.loyaltyPoints >= 1000) { await updateDoc(getDocRef('users', uDoc.id), { loyaltyPoints: ud.loyaltyPoints - 1000, walletBalance: (ud.walletBalance || 0) + 1.00 }); await updateDoc(getDocRef('point_requests', reqId), { status: 'approved' }); window.sendAppNotification(custUid, 'تم تحويل 1000 نقطة إلى 1 دينار في محفظتك 💰'); window.showToast('تمت الموافقة وتم التحويل', 'success'); } else window.showToast('نقاط الزبون غير كافية', 'error'); } } catch(e) {} };
+        window.rejectPointRequest = async function(reqId) { await updateDoc(getDocRef('point_requests', reqId), { status: 'rejected' }); window.showToast('تم رفض الطلب', 'info'); };
+        window.confirmTopUp = async function(isPositive) { if(currentUserRole !== 'admin' || !topUpTargetId) return; const amount = parseFloat(document.getElementById('topup-amount').value); if(!amount || isNaN(amount) || amount <= 0) return window.showToast('أدخل مبلغاً صحيحاً', 'error'); try { const finalAmount = isPositive ? (topUpCurrentBal + amount) : (topUpCurrentBal - amount); await updateDoc(getDocRef('staff', topUpTargetId), { walletBalance: finalAmount }); window.showToast(isPositive ? 'تم شحن المحفظة 💰' : 'تم خصم العقوبة 🚫', 'success'); window.closeTopUpModal(); } catch(e) { window.showToast('حدث خطأ', 'error'); } };
+        window.exportCSV = function() { 
+            let csv = 'Order ID,Customer,Merchant,Item,Price,Delivery Fee,Status,Type\n'; 
+            allOrders.forEach(o => { 
+                const safeItem = (o.item || 'منتج غير معروف').replace(/,/g, '-').replace(/\n/g, ' ');
+                csv += `${o.id},${o.customerName},${o.merchantId || 'N/A'},${safeItem},${o.price},${o.deliveryFee},${o.status},${o.type}\n`; 
+            }); 
+            const blob = new Blob(["\ufeff", csv], { type: 'text/csv;charset=utf-8;' }); 
+            const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = "orders_report.csv"; link.click(); 
+        };
+        window.printReceipt = function(orderId) { 
+            const o = allOrders.find(x => x.id === orderId); if(!o) return; 
+            const safeItem = (o.item || 'منتج غير معروف').replace(/\n/g, '<br>');
+            const pw = window.open('', '_blank'); 
+            pw.document.write(`<html><head><title>فاتورة ${o.id}</title><style>body{font-family:sans-serif; direction:rtl; text-align:center; margin:20px;} hr{border-top:1px dashed #000;} .t{font-size:12px;}</style></head><body><h2>فزعــة</h2><hr><p>الطلب: #${o.id.substring(0,6)}</p><p>الزبون: ${o.customerName}</p><p>الهاتف: ${o.customerPhone}</p><hr><h3>${safeItem}</h3><p class="t">ملاحظات: ${o.notes || 'لا يوجد'}</p><hr><p>الإجمالي: ${(o.price).toFixed(2)} JOD</p></body></html>`); 
+            pw.document.close(); pw.print(); 
+        };
+        window.saveAdminEdit = async function() { if(currentUserRole !== 'admin') return; const id = document.getElementById('edit-user-id').value; const col = document.getElementById('edit-user-col').value; const name = document.getElementById('edit-user-name').value.trim(); const phone = document.getElementById('edit-user-phone').value.trim(); const pass = document.getElementById('edit-user-pass').value.trim(); const wNum = document.getElementById('edit-user-worknum').value.trim(); const wall = parseFloat(document.getElementById('edit-user-wallet').value) || 0; const pts = parseInt(document.getElementById('edit-user-points').value) || 0; if(!name || !pass) return window.showToast('الاسم وكلمة المرور مطلوبة', 'error'); const payload = { name: name, phone: phone, password: pass, walletBalance: wall, loyaltyPoints: pts }; if(col === 'staff') { if(!/^\d+$/.test(wNum) && wNum.trim() !== '') return window.showToast('المعرف يجب أن يكون أرقاماً فقط!', 'error'); payload.workNumber = wNum; } try { await updateDoc(getDocRef(col, id), payload); window.showToast('تم تحديث البيانات بنجاح ✅', 'success'); window.closeAdminEdit(); } catch(e) { window.showToast('خطأ في التحديث', 'error'); } };
+        window.previewLogoName = function(input) { const text = document.getElementById('logo-preview-text'); if (input.files && input.files[0]) { text.innerText = 'تم اختيار: ' + input.files[0].name; text.classList.add('text-green-600', 'font-bold'); } else { text.innerText = 'اختر شعار التطبيق (صورة)'; text.classList.remove('text-green-600', 'font-bold'); } };
+        window.saveAppSettings = async function() { if(currentUserRole !== 'admin') return; const name = document.getElementById('setting-app-name').value.trim(); const fileInput = document.getElementById('setting-app-logo-file'); let logoBase64 = appSettings.logo; if (fileInput.files && fileInput.files.length > 0) { const file = fileInput.files[0]; const reader = new FileReader(); reader.onload = async (e) => { logoBase64 = e.target.result; await setDoc(getDocRef('settings', 'app_config'), { name: name || 'فزعــة', logo: logoBase64 }); window.showToast('تم تحديث إعدادات التطبيق', 'success'); }; reader.readAsDataURL(file); } else { await setDoc(getDocRef('settings', 'app_config'), { name: name || 'فزعــة', logo: logoBase64 }); window.showToast('تم تحديث إعدادات التطبيق', 'success'); } };
 
-        // --- Execute Init ---
+        window.startFirestoreListeners = function() {
+            unsubs.forEach(unsub => unsub()); unsubs = [];
+            if(!currentUser) return;
+            unsubs.push(onSnapshot(getDocRef('settings', 'app_config'), (docSnap) => { if(docSnap.exists()) { appSettings = docSnap.data(); window.applyAppSettings(); }}));
+            unsubs.push(onSnapshot(getCollection('orders'), (snapshot) => {
+                const newOrders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                newOrders.sort((a, b) => (b.timestamp?.toMillis() || 0) - (a.timestamp?.toMillis() || 0));
+                if(currentUserRole === 'customer') { const myActive = newOrders.filter(o => o.customerId === (currentUserData?.uid || 'demo_cust') && o.status !== 'delivered'); const b = document.getElementById('cart-badge'); if(b) b.classList.toggle('hidden', myActive.length === 0); }
+                if(currentChatOrderId) { const activeO = newOrders.find(o => o.id === currentChatOrderId); if(activeO) window.renderChatMessages(activeO.chat || []); }
+                allOrders = newOrders; window.updateUI();
+            }));
+            unsubs.push(onSnapshot(getCollection('staff'), (snapshot) => {
+                allStaff = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                if (currentUserRole === 'captain' && currentUserData) { const me = allStaff.find(s => s.id === currentUserData.id); if(me) { currentUserData.walletBalance = me.walletBalance; window.updateCaptainWalletUI(); } }
+                if (currentUserRole === 'admin') { window.renderAdminStaffList(); window.updateAdminNotifDropdown(); }
+                window.updateUI();
+            }));
+            unsubs.push(onSnapshot(getCollection('users'), (snap) => { 
+                allUsers = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); 
+                if(currentUserRole === 'customer' && currentUserData) {
+                    const me = allUsers.find(u => u.uid === currentUserData.uid);
+                    if(me) { 
+                        currentUserData.loyaltyPoints = me.loyaltyPoints || 0; currentUserData.walletBalance = me.walletBalance || 0;
+                        const pEl = document.getElementById('prof-points'); if(pEl) pEl.innerText = currentUserData.loyaltyPoints; 
+                        const cEl = document.getElementById('cust-points-display'); if(cEl) cEl.innerText = currentUserData.loyaltyPoints; 
+                        const wEl = document.getElementById('prof-wallet'); if(wEl) wEl.innerText = currentUserData.walletBalance.toFixed(2);
+                        const convertBtn = document.getElementById('convert-points-section'); if(convertBtn) { if(currentUserData.loyaltyPoints >= 1000) convertBtn.classList.remove('hidden'); else convertBtn.classList.add('hidden'); }
+                    }
+                }
+                if(currentUserRole === 'admin') window.updateAdminNotifDropdown();
+            }));
+            unsubs.push(onSnapshot(getCollection('point_requests'), (snap) => {
+                allPointRequests = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                if(currentUserRole === 'admin') { const pending = allPointRequests.filter(r => r.status === 'pending'); const fb = document.getElementById('finance-badge'); if(fb) fb.classList.toggle('hidden', pending.length === 0); window.renderAdminFinance(); }
+            }));
+            unsubs.push(onSnapshot(getCollection('notifications'), (snap) => { allNotifications = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a, b) => (b.timestamp?.toMillis() || 0) - (a.timestamp?.toMillis() || 0)); window.updateNotificationsUI(); }));
+            unsubs.push(onSnapshot(getCollection('menu'), (snap) => { allMenu = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); window.updateUI(); }));
+        };
+
+        // --- Execute Firestore Init ---
         const initSystem = async () => {
-            try { await signInAnonymously(auth); } catch(e) { console.error("Network Error"); }
+            try {
+                // Ensure authentication meets standard rules
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch(e) { console.error("Auth initialization error"); }
+            
             onAuthStateChanged(auth, (user) => { 
                 if (user) { currentUser = user; window.startFirestoreListeners(); } 
-                setTimeout(() => { const loader = document.getElementById('initial-loader'); if(loader) { loader.classList.add('opacity-0'); setTimeout(() => loader.classList.add('hidden'), 500); } }, 500);
+                setTimeout(() => { 
+                    const loader = document.getElementById('initial-loader'); 
+                    if(loader) { 
+                        loader.classList.add('opacity-0'); 
+                        setTimeout(() => {
+                            loader.classList.add('hidden');
+                            // إصلاح: إظهار شاشة الدخول إذا لم يكن المستخدم مسجلاً بعد
+                            if (!currentUserRole) {
+                                window.showView('login');
+                            }
+                        }, 500); 
+                    } 
+                }, 500);
             });
         };
         initSystem();
